@@ -24,3 +24,8 @@ button:disabled {
   cursor: not-allowed;
   opacity: 0.45;
 }
+
+:focus-visible {
+  outline: 2px solid var(--gray-800, #1e293b);
+  outline-offset: 2px;
+}
