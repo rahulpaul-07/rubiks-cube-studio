@@ -44,6 +44,12 @@ function startApp() {
   renderPalette();
   renderAll("Ready", "neutral");
   bindEvents();
+  window.addEventListener("pagehide", disposeApp, { once: true });
+}
+
+function disposeApp() {
+  stopPlayback();
+  preview.dispose();
 }
 
 function bindEvents() {
