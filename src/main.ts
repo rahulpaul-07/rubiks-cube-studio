@@ -9,6 +9,7 @@ import {
 } from "./domain/cube";
 import { faceletsFromCubeString, parseFacelets, serializeFacelets } from "./domain/facelets";
 import { parseAlgorithm, splitMoves } from "./domain/notation";
+import { createScramble } from "./domain/scramble";
 import { Cube, ensureSolverLoaded } from "./solver";
 import {
   Check,
@@ -45,8 +46,6 @@ const FACE_TEXT: Record<Face, string> = {
   L: "#111827",
   B: "#ffffff",
 };
-
-const SCRAMBLE_LENGTH = 24;
 
 const icon = (node: unknown, label: string) => {
   const svg = createElement(node as Parameters<typeof createElement>[0], {
@@ -428,7 +427,7 @@ function applyAlgorithm() {
 }
 
 function scrambleCube() {
-  const scramble = createScramble(SCRAMBLE_LENGTH);
+  const scramble = createScramble();
   const cube = new Cube();
   cube.move(scramble);
   stopPlayback();
@@ -590,24 +589,6 @@ function makeCube(state: string) {
   } catch {
     return null;
   }
-}
-
-function createScramble(length: number) {
-  const suffixes = ["", "'", "2"];
-  const moves: string[] = [];
-  let previousFace = "";
-
-  while (moves.length < length) {
-    const face = FACES[Math.floor(Math.random() * FACES.length)];
-    if (face === previousFace) {
-      continue;
-    }
-    const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
-    moves.push(`${face}${suffix}`);
-    previousFace = face;
-  }
-
-  return moves.join(" ");
 }
 
 class CubePreview {
