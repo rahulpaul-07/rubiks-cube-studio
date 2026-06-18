@@ -20,7 +20,7 @@ export function renderAppTemplate(root: HTMLElement): void {
           <p class="eyebrow">3x3 cube solver</p>
           <h1>Rubik's Cube Studio</h1>
         </div>
-        <div class="status-pill" id="statusPill">Ready</div>
+        <div class="status-pill" id="statusPill" role="status" aria-live="polite">Ready</div>
       </header>
 
       <main class="workspace">
