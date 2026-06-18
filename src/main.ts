@@ -1,6 +1,7 @@
 import "./styles/index.css";
 import { createInitialState, reduceAppState } from "./app/state";
 import { FACES, FACE_NAMES, SOLVED_FACELETS, STICKERS_PER_FACE, type Face } from "./domain/cube";
+import { FACE_COLORS, FACE_TEXT_COLORS } from "./domain/colors";
 import { faceletsFromCubeString, parseFacelets, serializeFacelets } from "./domain/facelets";
 import { parseAlgorithm, splitMoves } from "./domain/notation";
 import { createScramble } from "./domain/scramble";
@@ -13,24 +14,6 @@ import { createElement, Pause, Play } from "lucide";
 import Cube from "cubejs";
 
 type Tone = "neutral" | "good" | "warn" | "bad";
-
-const FACE_COLORS: Record<Face, string> = {
-  U: "#f8fafc",
-  R: "#e9413a",
-  F: "#21b36b",
-  D: "#f5c84c",
-  L: "#f28a2e",
-  B: "#3667d6",
-};
-
-const FACE_TEXT: Record<Face, string> = {
-  U: "#111827",
-  R: "#ffffff",
-  F: "#ffffff",
-  D: "#1f2937",
-  L: "#111827",
-  B: "#ffffff",
-};
 
 renderAppTemplate(getAppRoot());
 const elements = getAppElements();
@@ -154,7 +137,7 @@ function renderNet() {
       button.type = "button";
       button.className = "sticker";
       button.style.setProperty("--sticker", FACE_COLORS[stickerFace]);
-      button.style.setProperty("--sticker-text", FACE_TEXT[stickerFace]);
+      button.style.setProperty("--sticker-text", FACE_TEXT_COLORS[stickerFace]);
       button.textContent = stickerFace;
       button.ariaLabel = `${FACE_NAMES[face]} sticker ${localIndex + 1}, ${FACE_NAMES[stickerFace]} color`;
       if (localIndex === 4) {

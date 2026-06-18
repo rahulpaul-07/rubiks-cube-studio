@@ -1,15 +1,7 @@
 import * as THREE from "three";
 import type { Face } from "../domain/cube";
+import { FACE_COLORS } from "../domain/colors";
 import { stickerPlacement } from "./stickerPlacement";
-
-const FACE_COLORS: Record<Face, string> = {
-  U: "#f8fafc",
-  R: "#e9413a",
-  F: "#21b36b",
-  D: "#f5c84c",
-  L: "#f28a2e",
-  B: "#3667d6",
-};
 
 export class CubePreview {
   private readonly scene = new THREE.Scene();
