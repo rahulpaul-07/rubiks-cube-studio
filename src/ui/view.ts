@@ -10,7 +10,7 @@ import type { CubePreview } from "../rendering/CubePreview";
 
 export type Tone = "neutral" | "good" | "warn" | "bad";
 
-export function renderPalette(elements: AppElements, selectedFace: string, onSelect: (face: any) => void) {
+export function renderPalette(elements: AppElements, selectedFace: string, onSelect: (face: Face) => void) {
   elements.palette.innerHTML = "";
   for (const face of FACES) {
     const button = document.createElement("button");
@@ -18,8 +18,8 @@ export function renderPalette(elements: AppElements, selectedFace: string, onSel
     button.className = "swatch-btn";
     button.dataset.face = face;
     button.ariaPressed = String(face === selectedFace);
-    button.innerHTML = `<span class="swatch" style="--swatch:${FACE_COLORS[face as keyof typeof FACE_COLORS]}"></span><span>${face}</span>`;
-    button.title = `${FACE_NAMES[face as keyof typeof FACE_NAMES]} color`;
+    button.innerHTML = `<span class="swatch" style="--swatch:${FACE_COLORS[face]}"></span><span>${face}</span>`;
+    button.title = `${FACE_NAMES[face]} color`;
     button.addEventListener("click", () => onSelect(face));
     elements.palette.appendChild(button);
   }
@@ -31,7 +31,7 @@ export function renderNet(elements: AppElements, appState: AppState, onPaint: (i
     const faceIndex = FACES.indexOf(face);
     const facePanel = document.createElement("div");
     facePanel.className = `face face-${face}`;
-    facePanel.setAttribute("aria-label", `${FACE_NAMES[face as keyof typeof FACE_NAMES]} face`);
+    facePanel.setAttribute("aria-label", `${FACE_NAMES[face]} face`);
     facePanel.innerHTML = `<div class="face-title">${face}</div>`;
 
     const grid = document.createElement("div");
@@ -43,10 +43,10 @@ export function renderNet(elements: AppElements, appState: AppState, onPaint: (i
       const button = document.createElement("button");
       button.type = "button";
       button.className = "sticker";
-      button.style.setProperty("--sticker", FACE_COLORS[stickerFace as keyof typeof FACE_COLORS]);
-      button.style.setProperty("--sticker-text", FACE_TEXT_COLORS[stickerFace as keyof typeof FACE_TEXT_COLORS]);
+      button.style.setProperty("--sticker", FACE_COLORS[stickerFace]);
+      button.style.setProperty("--sticker-text", FACE_TEXT_COLORS[stickerFace]);
       button.textContent = stickerFace;
-      button.ariaLabel = `${FACE_NAMES[face as keyof typeof FACE_NAMES]} sticker ${localIndex + 1}, ${FACE_NAMES[stickerFace as keyof typeof FACE_NAMES]} color`;
+      button.ariaLabel = `${FACE_NAMES[face]} sticker ${localIndex + 1}, ${FACE_NAMES[stickerFace]} color`;
       if (localIndex === 4) {
         button.disabled = true;
         button.title = "Centers are fixed on a 3x3 cube";
@@ -67,7 +67,7 @@ export function renderColorBalance(elements: AppElements, appState: AppState) {
     const ok = counts[face] === STICKERS_PER_FACE;
     return `
       <div class="count ${ok ? "ok" : "warn"}">
-        <span class="mini-swatch" style="--swatch:${FACE_COLORS[face as keyof typeof FACE_COLORS]}"></span>
+        <span class="mini-swatch" style="--swatch:${FACE_COLORS[face]}"></span>
         <span>${face}</span>
         <strong>${counts[face]}</strong>
       </div>
@@ -145,7 +145,7 @@ export function renderAll(
   appState: AppState, 
   preview: CubePreview,
   isPlaying: boolean,
-  handlers: { onSelectFace: (face: any) => void; onPaint: (index: number) => void },
+  handlers: { onSelectFace: (face: Face) => void; onPaint: (index: number) => void },
   message?: string, 
   tone: Tone = "neutral"
 ) {
