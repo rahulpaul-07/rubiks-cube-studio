@@ -1,5 +1,8 @@
 # Rubik's Cube Studio
 
+[![CI](https://github.com/rahulpaul-07/rubiks-cube-studio/actions/workflows/ci.yml/badge.svg)](https://github.com/rahulpaul-07/rubiks-cube-studio/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 An interactive 3×3 Rubik's Cube editor and solver built with TypeScript, Three.js, and the Kociemba
 two-phase algorithm.
 
@@ -24,6 +27,8 @@ apply move notation, solve the cube, and inspect the solution through step-by-st
 - **Three.js** for the interactive WebGL preview
 - **cubejs** for cube transformations and Kociemba solving
 - **ESLint and Prettier** for automated code-quality checks
+- **Vitest** for unit testing
+- **GitHub Actions** for continuous integration
 
 ## Architecture
 
@@ -65,16 +70,19 @@ Vite serves the application at `http://127.0.0.1:5173` by default.
 
 ## Commands
 
-| Command                | Purpose                                                  |
-| ---------------------- | -------------------------------------------------------- |
-| `npm run dev`          | Start the local development server                       |
-| `npm run build`        | Type-check and create the production bundle              |
-| `npm run preview`      | Preview the production bundle locally                    |
-| `npm run format`       | Format supported project files                           |
-| `npm run format:check` | Verify formatting without modifying files                |
-| `npm run lint`         | Run ESLint                                               |
-| `npm run typecheck`    | Run TypeScript without emitting files                    |
-| `npm run check`        | Run formatting, linting, type checking, and build checks |
+| Command                | Purpose                                                           |
+| ---------------------- | ----------------------------------------------------------------- |
+| `npm run dev`          | Start the local development server                                |
+| `npm run build`        | Type-check and create the production bundle                       |
+| `npm run preview`      | Preview the production bundle locally                             |
+| `npm run test`         | Run unit tests once                                               |
+| `npm run test:watch`   | Run unit tests in watch mode                                      |
+| `npm run test:coverage`| Run unit tests with coverage report                               |
+| `npm run format`       | Format supported project files                                    |
+| `npm run format:check` | Verify formatting without modifying files                         |
+| `npm run lint`         | Run ESLint                                                        |
+| `npm run typecheck`    | Run TypeScript without emitting files                             |
+| `npm run check`        | Run formatting, linting, type checking, tests, and build checks   |
 
 ## Cube representation
 
@@ -110,11 +118,19 @@ planned. Until implemented, a color-balanced state can still be physically impos
 - Publish directory: `dist`
 - SPA fallback: all routes rewrite to `/index.html`
 
+## Documentation
+
+- [ARCHITECTURE.md](ARCHITECTURE.md) — module map, dependency flow, and design decisions
+- [CONTRIBUTING.md](CONTRIBUTING.md) — development setup, workflow, and code style
+
 ## Known limitations
 
 - Solver initialization and execution occur on the main browser thread.
 - Solution playback updates cube states but does not animate individual face turns.
 - The Three.js preview currently renders continuously while the page is open.
-- Automated unit, integration, and end-to-end tests are not yet configured.
 - Solver loading evaluates the CommonJS source distributed by `cubejs`, which limits strict Content
   Security Policy support.
+
+## License
+
+[MIT](LICENSE)
