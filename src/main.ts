@@ -219,7 +219,9 @@ function must<T extends Element>(selector: string): T {
 }
 
 function bindEvents() {
-  elements.solveBtn.addEventListener("click", solveCurrentState);
+  elements.solveBtn.addEventListener("click", () => {
+    void solveCurrentState();
+  });
   elements.scrambleBtn.addEventListener("click", scrambleCube);
   elements.validateBtn.addEventListener("click", () => {
     const validation = validateFacelets(facelets);
