@@ -113,6 +113,34 @@ function bindEvents() {
   elements.prevStepBtn.addEventListener("click", () => stepPlayback(appState.playbackStep - 1));
   elements.nextStepBtn.addEventListener("click", () => stepPlayback(appState.playbackStep + 1));
   elements.playBtn.addEventListener("click", togglePlayback);
+
+  window.addEventListener("keydown", (event) => {
+    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+      return;
+    }
+    switch (event.key) {
+      case " ":
+        event.preventDefault();
+        togglePlayback();
+        break;
+      case "ArrowLeft":
+        stepPlayback(appState.playbackStep - 1);
+        break;
+      case "ArrowRight":
+        stepPlayback(appState.playbackStep + 1);
+        break;
+      case "s":
+      case "S":
+        if (!elements.solveBtn.disabled) {
+          void solveCurrentState();
+        }
+        break;
+      case "r":
+      case "R":
+        scrambleCube();
+        break;
+    }
+  });
 }
 
 function onSelectFace(face: Face) {
