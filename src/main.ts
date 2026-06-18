@@ -4,7 +4,7 @@ import { faceletsFromCubeString, parseFacelets, serializeFacelets } from "./doma
 import { parseAlgorithm, splitMoves } from "./domain/notation";
 import { createScramble } from "./domain/scramble";
 import { countFacelets, validateFacelets } from "./domain/validation";
-import { Cube, ensureSolverLoaded } from "./solver";
+import { cubeSolver } from "./solver/cubejsSolver";
 import {
   Check,
   ChevronLeft,
@@ -19,6 +19,7 @@ import {
   Sparkles,
   SquarePen,
 } from "lucide";
+import Cube from "cubejs";
 import * as THREE from "three";
 
 type Tone = "neutral" | "good" | "warn" | "bad";
@@ -184,7 +185,6 @@ const elements = {
 
 let selectedFace: Face = "F";
 let facelets = faceletsFromCubeString(SOLVED_FACELETS);
-let solverReady = false;
 let solutionBase = "";
 let solutionMoves: string[] = [];
 let playbackStep = 0;
@@ -447,24 +447,20 @@ async function solveCurrentState() {
 
   try {
     elements.solveBtn.disabled = true;
-    if (!solverReady) {
+    if (!cubeSolver.ready) {
       setStatus("Preparing solver tables", "neutral");
-      await ensureSolverLoaded();
-      Cube.initSolver();
-      solverReady = true;
+      await cubeSolver.initialize();
     }
 
-    const start = performance.now();
-    const solution = cube.solve();
-    const elapsed = Math.max(1, Math.round(performance.now() - start));
+    const result = cubeSolver.solve(state);
     solutionBase = state;
-    solutionMoves = splitMoves(solution);
+    solutionMoves = splitMoves(result.algorithm);
     playbackStep = 0;
 
     if (solutionMoves.length === 0) {
       renderAll("Cube is already solved", "good");
     } else {
-      renderAll(`Solved in ${solutionMoves.length} moves (${elapsed} ms)`, "good");
+      renderAll(`Solved in ${solutionMoves.length} moves (${result.durationMs} ms)`, "good");
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : "The solver rejected this cube";
