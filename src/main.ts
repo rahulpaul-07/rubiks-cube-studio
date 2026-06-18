@@ -91,6 +91,27 @@ function renderAll(message?: string, tone: Tone = "neutral") {
   renderSolution();
   preview.update(appState.facelets);
   updateStateLabels();
+  renderStatus(message, tone);
+}
+
+function renderFaceletState(options: { colorBalance?: boolean } = {}) {
+  renderNet();
+  if (options.colorBalance) {
+    renderColorBalance();
+  }
+  renderStateInput();
+  renderSolution();
+  preview.update(appState.facelets);
+  updateStateLabels();
+}
+
+function renderSolveResult(message: string, tone: Tone) {
+  renderSolution();
+  updateStateLabels();
+  setStatus(message, tone);
+}
+
+function renderStatus(message?: string, tone: Tone = "neutral") {
   if (message) {
     setStatus(message, tone);
   }
@@ -217,7 +238,8 @@ function updateStateLabels() {
 function paintSticker(index: number) {
   stopPlayback();
   appState = reduceAppState(appState, { type: "paint-sticker", index });
-  renderAll("Sticker updated", "neutral");
+  renderFaceletState({ colorBalance: true });
+  setStatus("Sticker updated", "neutral");
 }
 
 function setFacelets(nextFacelets: Face[], options: { clearSolution?: boolean } = {}) {
@@ -236,7 +258,8 @@ function importFaceletString() {
   }
   stopPlayback();
   setFacelets(parsed.facelets, { clearSolution: true });
-  renderAll("Facelet string imported", "neutral");
+  renderFaceletState({ colorBalance: true });
+  setStatus("Facelet string imported", "neutral");
 }
 
 function applyAlgorithm() {
@@ -257,7 +280,8 @@ function applyAlgorithm() {
     stopPlayback();
     setFacelets(faceletsFromCubeString(cube.asString()), { clearSolution: true });
     elements.algorithmInput.value = "";
-    renderAll("Moves applied", "good");
+    renderFaceletState();
+    setStatus("Moves applied", "good");
   } catch {
     setStatus("That move notation is not supported", "warn");
   }
@@ -274,7 +298,8 @@ function scrambleCube() {
     lastScramble: scramble,
     clearSolution: true,
   });
-  renderAll("Scramble generated", "good");
+  renderFaceletState();
+  setStatus("Scramble generated", "good");
 }
 
 async function solveCurrentState() {
@@ -307,9 +332,9 @@ async function solveCurrentState() {
     });
 
     if (appState.solutionMoves.length === 0) {
-      renderAll("Cube is already solved", "good");
+      renderSolveResult("Cube is already solved", "good");
     } else {
-      renderAll(
+      renderSolveResult(
         `Solved in ${appState.solutionMoves.length} moves (${result.durationMs} ms)`,
         "good",
       );
@@ -352,7 +377,7 @@ function stepPlayback(nextStep: number) {
     facelets: faceletsFromCubeString(cube.asString()),
     lastScramble: appState.lastScramble,
   });
-  renderAll();
+  renderFaceletState();
   if (appState.playbackStep >= appState.solutionMoves.length) {
     stopPlayback();
     setStatus("Playback complete", "good");
