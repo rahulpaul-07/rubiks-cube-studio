@@ -6,20 +6,9 @@ import { parseAlgorithm, splitMoves } from "./domain/notation";
 import { createScramble } from "./domain/scramble";
 import { countFacelets, validateFacelets } from "./domain/validation";
 import { cubeSolver } from "./solver/cubejsSolver";
-import {
-  Check,
-  ChevronLeft,
-  ChevronRight,
-  createElement,
-  Pause,
-  Play,
-  RefreshCcw,
-  Rotate3D,
-  Send,
-  Shuffle,
-  Sparkles,
-  SquarePen,
-} from "lucide";
+import { getAppElements, getAppRoot } from "./ui/dom";
+import { renderAppTemplate } from "./ui/template";
+import { createElement, Pause, Play } from "lucide";
 import Cube from "cubejs";
 import * as THREE from "three";
 
@@ -43,146 +32,8 @@ const FACE_TEXT: Record<Face, string> = {
   B: "#ffffff",
 };
 
-const icon = (node: unknown, label: string) => {
-  const svg = createElement(node as Parameters<typeof createElement>[0], {
-    width: 18,
-    height: 18,
-    "aria-hidden": "true",
-  });
-  return `${svg.outerHTML}<span>${label}</span>`;
-};
-
-const app = document.querySelector<HTMLDivElement>("#app");
-
-if (!app) {
-  throw new Error("App root was not found");
-}
-
-app.innerHTML = `
-  <div class="app-shell">
-    <header class="topbar">
-      <div>
-        <p class="eyebrow">3x3 cube solver</p>
-        <h1>Rubik's Cube Studio</h1>
-      </div>
-      <div class="status-pill" id="statusPill">Ready</div>
-    </header>
-
-    <main class="workspace">
-      <section class="panel preview-panel" aria-label="Cube preview">
-        <div class="panel-heading">
-          <div>
-            <p class="eyebrow">Live preview</p>
-            <h2>Interactive cube</h2>
-          </div>
-          <button class="icon-btn" id="resetViewBtn" type="button" title="Reset 3D view" aria-label="Reset 3D view">
-            ${createElement(Rotate3D, { width: 18, height: 18, "aria-hidden": "true" }).outerHTML}
-          </button>
-        </div>
-        <div class="preview-canvas" id="preview"></div>
-        <div class="preview-footer">
-          <span id="stateLabel">Solved state</span>
-          <span id="moveCountLabel">0 moves</span>
-        </div>
-      </section>
-
-      <section class="panel editor-panel" aria-label="Cube facelet editor">
-        <div class="panel-heading">
-          <div>
-            <p class="eyebrow">Sticker editor</p>
-            <h2>Paint the cube</h2>
-          </div>
-        </div>
-        <div class="palette" id="palette" aria-label="Color palette"></div>
-        <div class="face-net" id="faceNet"></div>
-        <div class="color-balance" id="colorBalance"></div>
-      </section>
-
-      <section class="panel control-panel" aria-label="Solver controls">
-        <div class="panel-heading">
-          <div>
-            <p class="eyebrow">Solve flow</p>
-            <h2>Controls</h2>
-          </div>
-        </div>
-
-        <div class="button-grid">
-          <button class="btn primary" id="solveBtn" type="button">${icon(Sparkles, "Solve")}</button>
-          <button class="btn" id="scrambleBtn" type="button">${icon(Shuffle, "Scramble")}</button>
-          <button class="btn" id="validateBtn" type="button">${icon(Check, "Validate")}</button>
-          <button class="btn" id="resetBtn" type="button">${icon(RefreshCcw, "Reset")}</button>
-        </div>
-
-        <label class="field">
-          <span>Move notation</span>
-          <div class="inline-field">
-            <input id="algorithmInput" autocomplete="off" spellcheck="false" placeholder="R U R' U'" />
-            <button class="icon-btn solid" id="applyAlgorithmBtn" type="button" title="Apply moves" aria-label="Apply moves">
-              ${createElement(Send, { width: 17, height: 17, "aria-hidden": "true" }).outerHTML}
-            </button>
-          </div>
-        </label>
-
-        <label class="field">
-          <span>Facelet string</span>
-          <textarea id="stateInput" spellcheck="false" rows="3"></textarea>
-        </label>
-
-        <div class="solution-box">
-          <div class="solution-header">
-            <div>
-              <p class="eyebrow">Solution</p>
-              <h3 id="solutionTitle">No solve yet</h3>
-            </div>
-            <button class="icon-btn" id="copyBtn" type="button" title="Copy solution" aria-label="Copy solution">
-              ${createElement(SquarePen, { width: 17, height: 17, "aria-hidden": "true" }).outerHTML}
-            </button>
-          </div>
-          <div class="solution-moves" id="solutionMoves">Create or enter a scramble, then solve.</div>
-          <div class="playback">
-            <button class="icon-btn" id="prevStepBtn" type="button" title="Previous move" aria-label="Previous move">
-              ${createElement(ChevronLeft, { width: 18, height: 18, "aria-hidden": "true" }).outerHTML}
-            </button>
-            <button class="icon-btn solid" id="playBtn" type="button" title="Play solution" aria-label="Play solution">
-              ${createElement(Play, { width: 18, height: 18, "aria-hidden": "true" }).outerHTML}
-            </button>
-            <button class="icon-btn" id="nextStepBtn" type="button" title="Next move" aria-label="Next move">
-              ${createElement(ChevronRight, { width: 18, height: 18, "aria-hidden": "true" }).outerHTML}
-            </button>
-            <div class="progress-track" aria-hidden="true"><div id="progressFill"></div></div>
-            <span id="stepLabel">0 / 0</span>
-          </div>
-        </div>
-      </section>
-    </main>
-  </div>
-`;
-
-const elements = {
-  statusPill: must<HTMLDivElement>("#statusPill"),
-  preview: must<HTMLDivElement>("#preview"),
-  stateLabel: must<HTMLSpanElement>("#stateLabel"),
-  moveCountLabel: must<HTMLSpanElement>("#moveCountLabel"),
-  palette: must<HTMLDivElement>("#palette"),
-  faceNet: must<HTMLDivElement>("#faceNet"),
-  colorBalance: must<HTMLDivElement>("#colorBalance"),
-  solveBtn: must<HTMLButtonElement>("#solveBtn"),
-  scrambleBtn: must<HTMLButtonElement>("#scrambleBtn"),
-  validateBtn: must<HTMLButtonElement>("#validateBtn"),
-  resetBtn: must<HTMLButtonElement>("#resetBtn"),
-  resetViewBtn: must<HTMLButtonElement>("#resetViewBtn"),
-  algorithmInput: must<HTMLInputElement>("#algorithmInput"),
-  applyAlgorithmBtn: must<HTMLButtonElement>("#applyAlgorithmBtn"),
-  stateInput: must<HTMLTextAreaElement>("#stateInput"),
-  solutionTitle: must<HTMLHeadingElement>("#solutionTitle"),
-  solutionMoves: must<HTMLDivElement>("#solutionMoves"),
-  copyBtn: must<HTMLButtonElement>("#copyBtn"),
-  prevStepBtn: must<HTMLButtonElement>("#prevStepBtn"),
-  playBtn: must<HTMLButtonElement>("#playBtn"),
-  nextStepBtn: must<HTMLButtonElement>("#nextStepBtn"),
-  progressFill: must<HTMLDivElement>("#progressFill"),
-  stepLabel: must<HTMLSpanElement>("#stepLabel"),
-};
+renderAppTemplate(getAppRoot());
+const elements = getAppElements();
 
 let appState = createInitialState();
 let playTimer = 0;
@@ -193,14 +44,6 @@ function startApp() {
   renderPalette();
   renderAll("Ready", "neutral");
   bindEvents();
-}
-
-function must<T extends Element>(selector: string): T {
-  const node = document.querySelector<T>(selector);
-  if (!node) {
-    throw new Error(`Missing element: ${selector}`);
-  }
-  return node;
 }
 
 function bindEvents() {
