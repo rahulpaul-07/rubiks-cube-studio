@@ -6,6 +6,12 @@ export default defineConfig({
     coverage: {
       include: ["src/domain/**", "src/app/**", "src/solver/types.ts"],
       reporter: ["text", "lcov"],
+      thresholds: {
+        statements: 80,
+        branches: 80,
+        functions: 80,
+        lines: 80,
+      },
     },
   },
 });
