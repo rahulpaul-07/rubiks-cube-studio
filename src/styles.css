@@ -1,7 +1,12 @@
 :root {
   color-scheme: light;
   font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
     sans-serif;
   background: #f5f7fb;
   color: #18212f;
@@ -19,8 +24,7 @@ body {
   min-height: 100vh;
   margin: 0;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(245, 247, 251, 0.94)),
-    #f5f7fb;
+    linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(245, 247, 251, 0.94)), #f5f7fb;
 }
 
 button,
@@ -152,8 +156,7 @@ h3 {
   border-block: 1px solid #e4e9f1;
   background:
     linear-gradient(135deg, rgba(37, 99, 235, 0.1), transparent 32%),
-    linear-gradient(225deg, rgba(34, 179, 107, 0.12), transparent 34%),
-    #f9fbff;
+    linear-gradient(225deg, rgba(34, 179, 107, 0.12), transparent 34%), #f9fbff;
   overflow: hidden;
 }
 

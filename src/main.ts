@@ -223,7 +223,10 @@ function bindEvents() {
   elements.scrambleBtn.addEventListener("click", scrambleCube);
   elements.validateBtn.addEventListener("click", () => {
     const validation = validateFacelets(facelets);
-    setStatus(validation.ok ? "Looks valid" : validation.messages[0], validation.ok ? "good" : "warn");
+    setStatus(
+      validation.ok ? "Looks valid" : validation.messages[0],
+      validation.ok ? "good" : "warn",
+    );
   });
   elements.resetBtn.addEventListener("click", () => {
     stopPlayback();
@@ -337,7 +340,12 @@ function renderSolution() {
   const moveCount = solutionMoves.length;
   elements.solutionTitle.textContent = moveCount ? `${moveCount} move solution` : "No solve yet";
   elements.solutionMoves.innerHTML = moveCount
-    ? solutionMoves.map((move, index) => `<span class="move-chip ${index < playbackStep ? "done" : ""}">${move}</span>`).join("")
+    ? solutionMoves
+        .map(
+          (move, index) =>
+            `<span class="move-chip ${index < playbackStep ? "done" : ""}">${move}</span>`,
+        )
+        .join("")
     : "Create or enter a scramble, then solve.";
 
   elements.prevStepBtn.disabled = !moveCount || playbackStep <= 0;
@@ -348,15 +356,25 @@ function renderSolution() {
   elements.progressFill.style.width = moveCount ? `${(playbackStep / moveCount) * 100}%` : "0%";
 
   const playIcon = playTimer ? Pause : Play;
-  elements.playBtn.innerHTML = createElement(playIcon, { width: 18, height: 18, "aria-hidden": "true" }).outerHTML;
+  elements.playBtn.innerHTML = createElement(playIcon, {
+    width: 18,
+    height: 18,
+    "aria-hidden": "true",
+  }).outerHTML;
   elements.playBtn.ariaLabel = playTimer ? "Pause solution" : "Play solution";
 }
 
 function updateStateLabels() {
   const validation = validateFacelets(facelets);
   const cubeSolved = validation.ok && makeCube(facelets.join(""))?.isSolved();
-  elements.stateLabel.textContent = cubeSolved ? "Solved state" : validation.ok ? "Solvable input shape" : "Needs attention";
-  elements.moveCountLabel.textContent = lastScramble ? `Scramble: ${lastScramble}` : `${solutionMoves.length || 0} moves`;
+  elements.stateLabel.textContent = cubeSolved
+    ? "Solved state"
+    : validation.ok
+      ? "Solvable input shape"
+      : "Needs attention";
+  elements.moveCountLabel.textContent = lastScramble
+    ? `Scramble: ${lastScramble}`
+    : `${solutionMoves.length || 0} moves`;
 }
 
 function paintSticker(index: number) {
@@ -574,7 +592,9 @@ function makeCube(state: string) {
   }
 }
 
-function normalizeAlgorithm(value: string): { ok: true; value: string } | { ok: false; message: string } {
+function normalizeAlgorithm(
+  value: string,
+): { ok: true; value: string } | { ok: false; message: string } {
   const tokens = splitMoves(value);
   if (!tokens.length) {
     return { ok: false, message: "Enter one or more moves first" };
