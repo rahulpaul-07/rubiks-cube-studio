@@ -1,4 +1,5 @@
 import "./styles.css";
+import { createInitialState, reduceAppState } from "./app/state";
 import { FACES, FACE_NAMES, SOLVED_FACELETS, STICKERS_PER_FACE, type Face } from "./domain/cube";
 import { faceletsFromCubeString, parseFacelets, serializeFacelets } from "./domain/facelets";
 import { parseAlgorithm, splitMoves } from "./domain/notation";
@@ -183,13 +184,8 @@ const elements = {
   stepLabel: must<HTMLSpanElement>("#stepLabel"),
 };
 
-let selectedFace: Face = "F";
-let facelets = faceletsFromCubeString(SOLVED_FACELETS);
-let solutionBase = "";
-let solutionMoves: string[] = [];
-let playbackStep = 0;
+let appState = createInitialState();
 let playTimer = 0;
-let lastScramble = "";
 let preview: CubePreview;
 
 function startApp() {
@@ -213,7 +209,7 @@ function bindEvents() {
   });
   elements.scrambleBtn.addEventListener("click", scrambleCube);
   elements.validateBtn.addEventListener("click", () => {
-    const validation = validateFacelets(facelets);
+    const validation = validateFacelets(appState.facelets);
     setStatus(
       validation.ok ? "Looks valid" : validation.issues[0].message,
       validation.ok ? "good" : "warn",
@@ -221,7 +217,6 @@ function bindEvents() {
   });
   elements.resetBtn.addEventListener("click", () => {
     stopPlayback();
-    lastScramble = "";
     setFacelets(faceletsFromCubeString(SOLVED_FACELETS), { clearSolution: true });
     renderAll("Reset to solved", "neutral");
   });
@@ -235,8 +230,8 @@ function bindEvents() {
   });
   elements.stateInput.addEventListener("input", importFaceletString);
   elements.copyBtn.addEventListener("click", copySolution);
-  elements.prevStepBtn.addEventListener("click", () => stepPlayback(playbackStep - 1));
-  elements.nextStepBtn.addEventListener("click", () => stepPlayback(playbackStep + 1));
+  elements.prevStepBtn.addEventListener("click", () => stepPlayback(appState.playbackStep - 1));
+  elements.nextStepBtn.addEventListener("click", () => stepPlayback(appState.playbackStep + 1));
   elements.playBtn.addEventListener("click", togglePlayback);
 }
 
@@ -245,7 +240,7 @@ function renderAll(message?: string, tone: Tone = "neutral") {
   renderColorBalance();
   renderStateInput();
   renderSolution();
-  preview.update(facelets);
+  preview.update(appState.facelets);
   updateStateLabels();
   if (message) {
     setStatus(message, tone);
@@ -259,11 +254,11 @@ function renderPalette() {
     button.type = "button";
     button.className = "swatch-btn";
     button.dataset.face = face;
-    button.ariaPressed = String(face === selectedFace);
+    button.ariaPressed = String(face === appState.selectedFace);
     button.innerHTML = `<span class="swatch" style="--swatch:${FACE_COLORS[face]}"></span><span>${face}</span>`;
     button.title = `${FACE_NAMES[face]} color`;
     button.addEventListener("click", () => {
-      selectedFace = face;
+      appState = reduceAppState(appState, { type: "select-face", face });
       renderPalette();
     });
     elements.palette.appendChild(button);
@@ -284,7 +279,7 @@ function renderNet() {
 
     for (let localIndex = 0; localIndex < STICKERS_PER_FACE; localIndex += 1) {
       const globalIndex = faceIndex * STICKERS_PER_FACE + localIndex;
-      const stickerFace = facelets[globalIndex];
+      const stickerFace = appState.facelets[globalIndex];
       const button = document.createElement("button");
       button.type = "button";
       button.className = "sticker";
@@ -307,7 +302,7 @@ function renderNet() {
 }
 
 function renderColorBalance() {
-  const counts = countFacelets(facelets);
+  const counts = countFacelets(appState.facelets);
   elements.colorBalance.innerHTML = FACES.map((face) => {
     const ok = counts[face] === STICKERS_PER_FACE;
     return `
@@ -321,30 +316,32 @@ function renderColorBalance() {
 }
 
 function renderStateInput() {
-  const state = serializeFacelets(facelets);
+  const state = serializeFacelets(appState.facelets);
   if (elements.stateInput.value !== state) {
     elements.stateInput.value = state;
   }
 }
 
 function renderSolution() {
-  const moveCount = solutionMoves.length;
+  const moveCount = appState.solutionMoves.length;
   elements.solutionTitle.textContent = moveCount ? `${moveCount} move solution` : "No solve yet";
   elements.solutionMoves.innerHTML = moveCount
-    ? solutionMoves
+    ? appState.solutionMoves
         .map(
           (move, index) =>
-            `<span class="move-chip ${index < playbackStep ? "done" : ""}">${move}</span>`,
+            `<span class="move-chip ${index < appState.playbackStep ? "done" : ""}">${move}</span>`,
         )
         .join("")
     : "Create or enter a scramble, then solve.";
 
-  elements.prevStepBtn.disabled = !moveCount || playbackStep <= 0;
-  elements.nextStepBtn.disabled = !moveCount || playbackStep >= moveCount;
+  elements.prevStepBtn.disabled = !moveCount || appState.playbackStep <= 0;
+  elements.nextStepBtn.disabled = !moveCount || appState.playbackStep >= moveCount;
   elements.playBtn.disabled = !moveCount;
   elements.copyBtn.disabled = !moveCount;
-  elements.stepLabel.textContent = `${playbackStep} / ${moveCount}`;
-  elements.progressFill.style.width = moveCount ? `${(playbackStep / moveCount) * 100}%` : "0%";
+  elements.stepLabel.textContent = `${appState.playbackStep} / ${moveCount}`;
+  elements.progressFill.style.width = moveCount
+    ? `${(appState.playbackStep / moveCount) * 100}%`
+    : "0%";
 
   const playIcon = playTimer ? Pause : Play;
   elements.playBtn.innerHTML = createElement(playIcon, {
@@ -356,31 +353,30 @@ function renderSolution() {
 }
 
 function updateStateLabels() {
-  const validation = validateFacelets(facelets);
-  const cubeSolved = validation.ok && makeCube(serializeFacelets(facelets))?.isSolved();
+  const validation = validateFacelets(appState.facelets);
+  const cubeSolved = validation.ok && makeCube(serializeFacelets(appState.facelets))?.isSolved();
   elements.stateLabel.textContent = cubeSolved
     ? "Solved state"
     : validation.ok
       ? "Solvable input shape"
       : "Needs attention";
-  elements.moveCountLabel.textContent = lastScramble
-    ? `Scramble: ${lastScramble}`
-    : `${solutionMoves.length || 0} moves`;
+  elements.moveCountLabel.textContent = appState.lastScramble
+    ? `Scramble: ${appState.lastScramble}`
+    : `${appState.solutionMoves.length || 0} moves`;
 }
 
 function paintSticker(index: number) {
   stopPlayback();
-  facelets[index] = selectedFace;
-  lastScramble = "";
-  clearSolution();
+  appState = reduceAppState(appState, { type: "paint-sticker", index });
   renderAll("Sticker updated", "neutral");
 }
 
 function setFacelets(nextFacelets: Face[], options: { clearSolution?: boolean } = {}) {
-  facelets = nextFacelets;
-  if (options.clearSolution) {
-    clearSolution();
-  }
+  appState = reduceAppState(appState, {
+    type: "replace-facelets",
+    facelets: nextFacelets,
+    clearSolution: options.clearSolution,
+  });
 }
 
 function importFaceletString() {
@@ -390,7 +386,6 @@ function importFaceletString() {
     return;
   }
   stopPlayback();
-  lastScramble = "";
   setFacelets(parsed.facelets, { clearSolution: true });
   renderAll("Facelet string imported", "neutral");
 }
@@ -402,7 +397,7 @@ function applyAlgorithm() {
     return;
   }
 
-  const cube = makeCube(serializeFacelets(facelets));
+  const cube = makeCube(serializeFacelets(appState.facelets));
   if (!cube) {
     setStatus("Fix the cube colors before applying moves", "warn");
     return;
@@ -411,7 +406,6 @@ function applyAlgorithm() {
   try {
     cube.move(algorithm.value);
     stopPlayback();
-    lastScramble = "";
     setFacelets(faceletsFromCubeString(cube.asString()), { clearSolution: true });
     elements.algorithmInput.value = "";
     renderAll("Moves applied", "good");
@@ -425,15 +419,19 @@ function scrambleCube() {
   const cube = new Cube();
   cube.move(scramble);
   stopPlayback();
-  lastScramble = scramble;
-  setFacelets(faceletsFromCubeString(cube.asString()), { clearSolution: true });
+  appState = reduceAppState(appState, {
+    type: "replace-facelets",
+    facelets: faceletsFromCubeString(cube.asString()),
+    lastScramble: scramble,
+    clearSolution: true,
+  });
   renderAll("Scramble generated", "good");
 }
 
 async function solveCurrentState() {
   stopPlayback();
-  const state = serializeFacelets(facelets);
-  const validation = validateFacelets(facelets);
+  const state = serializeFacelets(appState.facelets);
+  const validation = validateFacelets(appState.facelets);
   if (!validation.ok) {
     setStatus(validation.issues[0].message, "warn");
     return;
@@ -453,14 +451,19 @@ async function solveCurrentState() {
     }
 
     const result = cubeSolver.solve(state);
-    solutionBase = state;
-    solutionMoves = splitMoves(result.algorithm);
-    playbackStep = 0;
+    appState = reduceAppState(appState, {
+      type: "set-solution",
+      base: state,
+      moves: splitMoves(result.algorithm),
+    });
 
-    if (solutionMoves.length === 0) {
+    if (appState.solutionMoves.length === 0) {
       renderAll("Cube is already solved", "good");
     } else {
-      renderAll(`Solved in ${solutionMoves.length} moves (${result.durationMs} ms)`, "good");
+      renderAll(
+        `Solved in ${appState.solutionMoves.length} moves (${result.durationMs} ms)`,
+        "good",
+      );
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : "The solver rejected this cube";
@@ -471,10 +474,10 @@ async function solveCurrentState() {
 }
 
 function copySolution() {
-  if (!solutionMoves.length) {
+  if (!appState.solutionMoves.length) {
     return;
   }
-  const text = solutionMoves.join(" ");
+  const text = appState.solutionMoves.join(" ");
   if (navigator.clipboard) {
     navigator.clipboard.writeText(text).then(
       () => setStatus("Solution copied", "good"),
@@ -486,35 +489,39 @@ function copySolution() {
 }
 
 function stepPlayback(nextStep: number) {
-  if (!solutionMoves.length || !solutionBase) {
+  if (!appState.solutionMoves.length || !appState.solutionBase) {
     return;
   }
-  playbackStep = Math.max(0, Math.min(solutionMoves.length, nextStep));
-  const cube = Cube.fromString(solutionBase);
-  const prefix = solutionMoves.slice(0, playbackStep).join(" ");
+  appState = reduceAppState(appState, { type: "set-playback-step", step: nextStep });
+  const cube = Cube.fromString(appState.solutionBase);
+  const prefix = appState.solutionMoves.slice(0, appState.playbackStep).join(" ");
   if (prefix) {
     cube.move(prefix);
   }
-  facelets = faceletsFromCubeString(cube.asString());
+  appState = reduceAppState(appState, {
+    type: "replace-facelets",
+    facelets: faceletsFromCubeString(cube.asString()),
+    lastScramble: appState.lastScramble,
+  });
   renderAll();
-  if (playbackStep >= solutionMoves.length) {
+  if (appState.playbackStep >= appState.solutionMoves.length) {
     stopPlayback();
     setStatus("Playback complete", "good");
   }
 }
 
 function togglePlayback() {
-  if (!solutionMoves.length) {
+  if (!appState.solutionMoves.length) {
     return;
   }
   if (playTimer) {
     stopPlayback();
     return;
   }
-  if (playbackStep >= solutionMoves.length) {
+  if (appState.playbackStep >= appState.solutionMoves.length) {
     stepPlayback(0);
   }
-  playTimer = window.setInterval(() => stepPlayback(playbackStep + 1), 520);
+  playTimer = window.setInterval(() => stepPlayback(appState.playbackStep + 1), 520);
   renderSolution();
 }
 
@@ -524,13 +531,6 @@ function stopPlayback() {
     playTimer = 0;
     renderSolution();
   }
-}
-
-function clearSolution() {
-  stopPlayback();
-  solutionBase = "";
-  solutionMoves = [];
-  playbackStep = 0;
 }
 
 function setStatus(message: string, tone: Tone) {
