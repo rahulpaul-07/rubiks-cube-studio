@@ -1,4 +1,4 @@
-import "./styles.css";
+import "./styles/index.css";
 import { createInitialState, reduceAppState } from "./app/state";
 import { FACES, FACE_NAMES, SOLVED_FACELETS, STICKERS_PER_FACE, type Face } from "./domain/cube";
 import { faceletsFromCubeString, parseFacelets, serializeFacelets } from "./domain/facelets";
