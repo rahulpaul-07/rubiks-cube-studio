@@ -7,6 +7,7 @@ import {
   TOTAL_FACELETS,
   type Face,
 } from "./domain/cube";
+import { faceletsFromCubeString, parseFacelets, serializeFacelets } from "./domain/facelets";
 import { Cube, ensureSolverLoaded } from "./solver";
 import {
   Check,
@@ -44,7 +45,6 @@ const FACE_TEXT: Record<Face, string> = {
   B: "#ffffff",
 };
 
-const VALID_FACELET = /^[URFDLB]$/;
 const MOVE_PATTERN = /^[URFDLBMESxyzurfdlb](2|'|)?$/;
 const SCRAMBLE_LENGTH = 24;
 
@@ -190,7 +190,7 @@ const elements = {
 };
 
 let selectedFace: Face = "F";
-let facelets = stringToFacelets(SOLVED_FACELETS);
+let facelets = faceletsFromCubeString(SOLVED_FACELETS);
 let solverReady = false;
 let solutionBase = "";
 let solutionMoves: string[] = [];
@@ -229,7 +229,7 @@ function bindEvents() {
   elements.resetBtn.addEventListener("click", () => {
     stopPlayback();
     lastScramble = "";
-    setFacelets(stringToFacelets(SOLVED_FACELETS), { clearSolution: true });
+    setFacelets(faceletsFromCubeString(SOLVED_FACELETS), { clearSolution: true });
     renderAll("Reset to solved", "neutral");
   });
   elements.resetViewBtn.addEventListener("click", () => preview.resetView());
@@ -328,7 +328,7 @@ function renderColorBalance() {
 }
 
 function renderStateInput() {
-  const state = facelets.join("");
+  const state = serializeFacelets(facelets);
   if (elements.stateInput.value !== state) {
     elements.stateInput.value = state;
   }
@@ -364,7 +364,7 @@ function renderSolution() {
 
 function updateStateLabels() {
   const validation = validateFacelets(facelets);
-  const cubeSolved = validation.ok && makeCube(facelets.join(""))?.isSolved();
+  const cubeSolved = validation.ok && makeCube(serializeFacelets(facelets))?.isSolved();
   elements.stateLabel.textContent = cubeSolved
     ? "Solved state"
     : validation.ok
@@ -391,14 +391,14 @@ function setFacelets(nextFacelets: Face[], options: { clearSolution?: boolean } 
 }
 
 function importFaceletString() {
-  const raw = elements.stateInput.value.toUpperCase().replace(/\s+/g, "");
-  if (raw.length !== TOTAL_FACELETS || [...raw].some((char) => !VALID_FACELET.test(char))) {
-    setStatus(`Paste ${TOTAL_FACELETS} characters using U, R, F, D, L, B`, "warn");
+  const parsed = parseFacelets(elements.stateInput.value);
+  if (!parsed.ok) {
+    setStatus(parsed.message, "warn");
     return;
   }
   stopPlayback();
   lastScramble = "";
-  setFacelets(stringToFacelets(raw), { clearSolution: true });
+  setFacelets(parsed.facelets, { clearSolution: true });
   renderAll("Facelet string imported", "neutral");
 }
 
@@ -409,7 +409,7 @@ function applyAlgorithm() {
     return;
   }
 
-  const cube = makeCube(facelets.join(""));
+  const cube = makeCube(serializeFacelets(facelets));
   if (!cube) {
     setStatus("Fix the cube colors before applying moves", "warn");
     return;
@@ -419,7 +419,7 @@ function applyAlgorithm() {
     cube.move(algorithm.value);
     stopPlayback();
     lastScramble = "";
-    setFacelets(stringToFacelets(cube.asString()), { clearSolution: true });
+    setFacelets(faceletsFromCubeString(cube.asString()), { clearSolution: true });
     elements.algorithmInput.value = "";
     renderAll("Moves applied", "good");
   } catch {
@@ -433,13 +433,13 @@ function scrambleCube() {
   cube.move(scramble);
   stopPlayback();
   lastScramble = scramble;
-  setFacelets(stringToFacelets(cube.asString()), { clearSolution: true });
+  setFacelets(faceletsFromCubeString(cube.asString()), { clearSolution: true });
   renderAll("Scramble generated", "good");
 }
 
 async function solveCurrentState() {
   stopPlayback();
-  const state = facelets.join("");
+  const state = serializeFacelets(facelets);
   const validation = validateFacelets(facelets);
   if (!validation.ok) {
     setStatus(validation.messages[0], "warn");
@@ -506,7 +506,7 @@ function stepPlayback(nextStep: number) {
   if (prefix) {
     cube.move(prefix);
   }
-  facelets = stringToFacelets(cube.asString());
+  facelets = faceletsFromCubeString(cube.asString());
   renderAll();
   if (playbackStep >= solutionMoves.length) {
     stopPlayback();
@@ -630,10 +630,6 @@ function createScramble(length: number) {
   }
 
   return moves.join(" ");
-}
-
-function stringToFacelets(value: string) {
-  return [...value].map((char) => char as Face);
 }
 
 class CubePreview {
