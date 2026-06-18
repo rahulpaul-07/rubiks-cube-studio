@@ -21,6 +21,7 @@ apply move notation, solve the cube, and inspect the solution through step-by-st
 - Lazy-loaded Kociemba solver
 - Solution timing, move count, copying, and playback controls
 - Responsive desktop and mobile layouts
+- Web App Manifest (PWA), SEO meta tags, and accessible focus states
 
 ## Technology
 
