@@ -8,6 +8,7 @@ import {
   type Face,
 } from "./domain/cube";
 import { faceletsFromCubeString, parseFacelets, serializeFacelets } from "./domain/facelets";
+import { parseAlgorithm, splitMoves } from "./domain/notation";
 import { Cube, ensureSolverLoaded } from "./solver";
 import {
   Check,
@@ -45,7 +46,6 @@ const FACE_TEXT: Record<Face, string> = {
   B: "#ffffff",
 };
 
-const MOVE_PATTERN = /^[URFDLBMESxyzurfdlb](2|'|)?$/;
 const SCRAMBLE_LENGTH = 24;
 
 const icon = (node: unknown, label: string) => {
@@ -403,7 +403,7 @@ function importFaceletString() {
 }
 
 function applyAlgorithm() {
-  const algorithm = normalizeAlgorithm(elements.algorithmInput.value);
+  const algorithm = parseAlgorithm(elements.algorithmInput.value);
   if (!algorithm.ok) {
     setStatus(algorithm.message, "warn");
     return;
@@ -590,28 +590,6 @@ function makeCube(state: string) {
   } catch {
     return null;
   }
-}
-
-function normalizeAlgorithm(
-  value: string,
-): { ok: true; value: string } | { ok: false; message: string } {
-  const tokens = splitMoves(value);
-  if (!tokens.length) {
-    return { ok: false, message: "Enter one or more moves first" };
-  }
-  const badMove = tokens.find((move) => !MOVE_PATTERN.test(move));
-  if (badMove) {
-    return { ok: false, message: `Unsupported move: ${badMove}` };
-  }
-  return { ok: true, value: tokens.join(" ") };
-}
-
-function splitMoves(value: string) {
-  return value
-    .trim()
-    .split(/\s+/)
-    .map((move) => move.trim())
-    .filter(Boolean);
 }
 
 function createScramble(length: number) {
