@@ -71,8 +71,8 @@ index.html
   └──────────┘
 ```
 
-Domain modules are pure and have no dependencies on the DOM, Three.js, or the solver
-implementation. The UI and rendering layers depend on domain types but never on each other.
+Domain modules are pure and have no dependencies on the DOM, Three.js, or the solver implementation.
+The UI and rendering layers depend on domain types but never on each other.
 
 `main.ts` acts as the composition root, wiring event handlers to state transitions and rendering
 updates.
@@ -86,21 +86,21 @@ mutations flow through a single function, making state changes predictable and t
 
 ### Solver loading
 
-`cubejs` distributes its solver tables as CommonJS source. The `CubeJsSolver` adapter evaluates
-this source lazily with a restricted `require` shim when the user first triggers a solve. This
-avoids blocking initial page load with the ~300ms table initialization.
+`cubejs` distributes its solver tables as CommonJS source. The `CubeJsSolver` adapter evaluates this
+source lazily with a restricted `require` shim when the user first triggers a solve. This avoids
+blocking initial page load with the ~300ms table initialization.
 
 ### Three.js lifecycle
 
 `CubePreview` manages its own animation loop and pointer-based rotation. The class exposes
-`update()` to synchronize sticker colors and `dispose()` to clean up WebGL resources when the
-page unloads.
+`update()` to synchronize sticker colors and `dispose()` to clean up WebGL resources when the page
+unloads.
 
 ### Validation scope
 
 The application validates facelet count, color balance, and center positions. Full cubie-level
-validation (edge/corner permutation parity and orientation) is not yet implemented—a
-color-balanced state can still be physically impossible.
+validation (edge/corner permutation parity and orientation) is not yet implemented—a color-balanced
+state can still be physically impossible.
 
 ## Testing
 

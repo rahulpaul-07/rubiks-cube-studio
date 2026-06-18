@@ -70,19 +70,19 @@ Vite serves the application at `http://127.0.0.1:5173` by default.
 
 ## Commands
 
-| Command                | Purpose                                                           |
-| ---------------------- | ----------------------------------------------------------------- |
-| `npm run dev`          | Start the local development server                                |
-| `npm run build`        | Type-check and create the production bundle                       |
-| `npm run preview`      | Preview the production bundle locally                             |
-| `npm run test`         | Run unit tests once                                               |
-| `npm run test:watch`   | Run unit tests in watch mode                                      |
-| `npm run test:coverage`| Run unit tests with coverage report                               |
-| `npm run format`       | Format supported project files                                    |
-| `npm run format:check` | Verify formatting without modifying files                         |
-| `npm run lint`         | Run ESLint                                                        |
-| `npm run typecheck`    | Run TypeScript without emitting files                             |
-| `npm run check`        | Run formatting, linting, type checking, tests, and build checks   |
+| Command                 | Purpose                                                         |
+| ----------------------- | --------------------------------------------------------------- |
+| `npm run dev`           | Start the local development server                              |
+| `npm run build`         | Type-check and create the production bundle                     |
+| `npm run preview`       | Preview the production bundle locally                           |
+| `npm run test`          | Run unit tests once                                             |
+| `npm run test:watch`    | Run unit tests in watch mode                                    |
+| `npm run test:coverage` | Run unit tests with coverage report                             |
+| `npm run format`        | Format supported project files                                  |
+| `npm run format:check`  | Verify formatting without modifying files                       |
+| `npm run lint`          | Run ESLint                                                      |
+| `npm run typecheck`     | Run TypeScript without emitting files                           |
+| `npm run check`         | Run formatting, linting, type checking, tests, and build checks |
 
 ## Cube representation
 

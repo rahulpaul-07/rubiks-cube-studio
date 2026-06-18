@@ -27,7 +27,15 @@ let preview: CubePreview;
 
 function startApp() {
   preview = new CubePreview(elements.preview);
-  renderAll(elements, appState, preview, !!playTimer, { onSelectFace, onPaint }, "Ready", "neutral");
+  renderAll(
+    elements,
+    appState,
+    preview,
+    !!playTimer,
+    { onSelectFace, onPaint },
+    "Ready",
+    "neutral",
+  );
   bindEvents();
   window.addEventListener("pagehide", disposeApp, { once: true });
 }
@@ -53,7 +61,15 @@ function bindEvents() {
   elements.resetBtn.addEventListener("click", () => {
     stopPlayback();
     setFacelets(faceletsFromCubeString(SOLVED_FACELETS), { clearSolution: true });
-    renderAll(elements, appState, preview, !!playTimer, { onSelectFace, onPaint }, "Reset to solved", "neutral");
+    renderAll(
+      elements,
+      appState,
+      preview,
+      !!playTimer,
+      { onSelectFace, onPaint },
+      "Reset to solved",
+      "neutral",
+    );
   });
   elements.resetViewBtn.addEventListener("click", () => preview.resetView());
   elements.applyAlgorithmBtn.addEventListener("click", applyAlgorithm);
@@ -181,7 +197,11 @@ async function solveCurrentState() {
     if (appState.solutionMoves.length === 0) {
       setStatus(elements, "Cube is already solved", "good");
     } else {
-      setStatus(elements, `Solved in ${appState.solutionMoves.length} moves (${result.durationMs} ms)`, "good");
+      setStatus(
+        elements,
+        `Solved in ${appState.solutionMoves.length} moves (${result.durationMs} ms)`,
+        "good",
+      );
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : "The solver rejected this cube";

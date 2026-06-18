@@ -1,5 +1,5 @@
 import type { AppState } from "../app/state";
-import { FACES, FACE_NAMES, STICKERS_PER_FACE } from "../domain/cube";
+import { FACES, FACE_NAMES, STICKERS_PER_FACE, type Face } from "../domain/cube";
 import { FACE_COLORS, FACE_TEXT_COLORS } from "../domain/colors";
 import { countFacelets, validateFacelets } from "../domain/validation";
 import { serializeFacelets } from "../domain/facelets";
@@ -10,7 +10,11 @@ import type { CubePreview } from "../rendering/CubePreview";
 
 export type Tone = "neutral" | "good" | "warn" | "bad";
 
-export function renderPalette(elements: AppElements, selectedFace: string, onSelect: (face: Face) => void) {
+export function renderPalette(
+  elements: AppElements,
+  selectedFace: string,
+  onSelect: (face: Face) => void,
+) {
   elements.palette.innerHTML = "";
   for (const face of FACES) {
     const button = document.createElement("button");
@@ -25,7 +29,11 @@ export function renderPalette(elements: AppElements, selectedFace: string, onSel
   }
 }
 
-export function renderNet(elements: AppElements, appState: AppState, onPaint: (index: number) => void) {
+export function renderNet(
+  elements: AppElements,
+  appState: AppState,
+  onPaint: (index: number) => void,
+) {
   elements.faceNet.innerHTML = "";
   for (const face of FACES) {
     const faceIndex = FACES.indexOf(face);
@@ -116,7 +124,7 @@ export function updateStateLabels(elements: AppElements, appState: AppState) {
   const validation = validateFacelets(appState.facelets);
   const stateStr = serializeFacelets(appState.facelets);
   let cubeSolved = false;
-  
+
   if (validation.ok) {
     try {
       cubeSolved = Cube.fromString(stateStr).isSolved();
@@ -141,13 +149,13 @@ export function setStatus(elements: AppElements, message: string, tone: Tone) {
 }
 
 export function renderAll(
-  elements: AppElements, 
-  appState: AppState, 
+  elements: AppElements,
+  appState: AppState,
   preview: CubePreview,
   isPlaying: boolean,
   handlers: { onSelectFace: (face: Face) => void; onPaint: (index: number) => void },
-  message?: string, 
-  tone: Tone = "neutral"
+  message?: string,
+  tone: Tone = "neutral",
 ) {
   renderPalette(elements, appState.selectedFace, handlers.onSelectFace);
   renderNet(elements, appState, handlers.onPaint);
@@ -162,12 +170,12 @@ export function renderAll(
 }
 
 export function renderFaceletState(
-  elements: AppElements, 
-  appState: AppState, 
+  elements: AppElements,
+  appState: AppState,
   preview: CubePreview,
   isPlaying: boolean,
   handlers: { onPaint: (index: number) => void },
-  options: { colorBalance?: boolean } = {}
+  options: { colorBalance?: boolean } = {},
 ) {
   renderNet(elements, appState, handlers.onPaint);
   if (options.colorBalance) {
