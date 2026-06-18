@@ -9,13 +9,15 @@
   },
   "packageManager": "npm@11.9.0",
   "scripts": {
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm run build",
     "dev": "vite --host 127.0.0.1",
     "build": "tsc && vite build",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "preview": "vite preview --host 127.0.0.1"
+    "preview": "vite preview --host 127.0.0.1",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "cubejs": "1.1.0",

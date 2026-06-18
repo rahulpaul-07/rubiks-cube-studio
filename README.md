@@ -26,6 +26,14 @@ npm run dev
 npm run build
 ```
 
+## Quality checks
+
+Run formatting, linting, type checking, and the production build with one command:
+
+```bash
+npm run check
+```
+
 ## Deploy on Render
 
 This repo includes `render.yaml` for a Render Static Site.
