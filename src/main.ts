@@ -38,6 +38,12 @@ function startApp() {
   );
   bindEvents();
   window.addEventListener("pagehide", disposeApp, { once: true });
+
+  if ("requestIdleCallback" in window) {
+    window.requestIdleCallback(() => cubeSolver.initialize());
+  } else {
+    setTimeout(() => cubeSolver.initialize(), 1000);
+  }
 }
 
 function disposeApp() {

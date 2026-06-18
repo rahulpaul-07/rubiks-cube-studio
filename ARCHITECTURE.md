@@ -87,8 +87,8 @@ mutations flow through a single function, making state changes predictable and t
 ### Solver loading
 
 `cubejs` distributes its solver tables as CommonJS source. The `CubeJsSolver` adapter evaluates this
-source lazily with a restricted `require` shim when the user first triggers a solve. This avoids
-blocking initial page load with the ~300ms table initialization.
+source lazily. To avoid blocking the initial page load while ensuring the solver is ready quickly,
+it is initialized during the browser's idle time using `requestIdleCallback`.
 
 ### Three.js lifecycle
 
