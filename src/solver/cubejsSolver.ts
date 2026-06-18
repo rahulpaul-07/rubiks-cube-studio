@@ -9,19 +9,20 @@ export class CubeJsSolver implements SolverService {
     return this.initialized;
   }
 
-  async initialize(): Promise<void> {
+  initialize(): Promise<void> {
     if (this.initialized) {
-      return;
+      return Promise.resolve();
+    }
+    if (this.initialization) {
+      return this.initialization;
     }
 
-    this.initialization ??= this.loadSolver();
-
-    try {
-      await this.initialization;
-    } catch (error) {
+    this.initialization = this.loadSolver().catch((error) => {
       this.initialization = null;
       throw error;
-    }
+    });
+
+    return this.initialization;
   }
 
   private async loadSolver(): Promise<void> {
