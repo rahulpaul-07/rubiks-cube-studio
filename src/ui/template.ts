@@ -15,6 +15,7 @@ import {
 export function renderAppTemplate(root: HTMLElement): void {
   root.innerHTML = `
     <div class="app-shell">
+      <a href="#main-workspace" class="skip-link" style="position: absolute; left: -9999px; z-index: 999;" onfocus="this.style.left='1rem';this.style.top='1rem'" onblur="this.style.left='-9999px'">Skip to main content</a>
       <header class="topbar">
         <div>
           <p class="eyebrow">3x3 cube solver</p>
@@ -23,7 +24,7 @@ export function renderAppTemplate(root: HTMLElement): void {
         <div class="status-pill" id="statusPill" role="status" aria-live="polite">Ready</div>
       </header>
 
-      <main class="workspace">
+      <main class="workspace" id="main-workspace">
         <section class="panel preview-panel" aria-label="Cube preview">
           <div class="panel-heading">
             <div>
