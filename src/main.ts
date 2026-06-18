@@ -26,6 +26,15 @@ let playTimer = 0;
 let preview: CubePreview;
 
 function startApp() {
+  window.addEventListener("error", (e) => {
+    console.error("Unhandled application error:", e.error);
+    const statusPill = document.getElementById("statusPill");
+    if (statusPill) {
+      statusPill.textContent = "Application Error";
+      statusPill.className = "status-pill bad";
+    }
+  });
+
   preview = new CubePreview(elements.preview);
   renderAll(
     elements,
