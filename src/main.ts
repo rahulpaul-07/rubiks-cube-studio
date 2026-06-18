@@ -1,15 +1,9 @@
 import "./styles.css";
-import {
-  FACES,
-  FACE_NAMES,
-  SOLVED_FACELETS,
-  STICKERS_PER_FACE,
-  TOTAL_FACELETS,
-  type Face,
-} from "./domain/cube";
+import { FACES, FACE_NAMES, SOLVED_FACELETS, STICKERS_PER_FACE, type Face } from "./domain/cube";
 import { faceletsFromCubeString, parseFacelets, serializeFacelets } from "./domain/facelets";
 import { parseAlgorithm, splitMoves } from "./domain/notation";
 import { createScramble } from "./domain/scramble";
+import { countFacelets, validateFacelets } from "./domain/validation";
 import { Cube, ensureSolverLoaded } from "./solver";
 import {
   Check,
@@ -221,7 +215,7 @@ function bindEvents() {
   elements.validateBtn.addEventListener("click", () => {
     const validation = validateFacelets(facelets);
     setStatus(
-      validation.ok ? "Looks valid" : validation.messages[0],
+      validation.ok ? "Looks valid" : validation.issues[0].message,
       validation.ok ? "good" : "warn",
     );
   });
@@ -441,7 +435,7 @@ async function solveCurrentState() {
   const state = serializeFacelets(facelets);
   const validation = validateFacelets(facelets);
   if (!validation.ok) {
-    setStatus(validation.messages[0], "warn");
+    setStatus(validation.issues[0].message, "warn");
     return;
   }
 
@@ -546,41 +540,6 @@ function clearSolution() {
 function setStatus(message: string, tone: Tone) {
   elements.statusPill.textContent = message;
   elements.statusPill.dataset.tone = tone;
-}
-
-function validateFacelets(state: Face[]) {
-  const messages: string[] = [];
-  if (state.length !== TOTAL_FACELETS) {
-    messages.push(`A 3x3 cube needs ${TOTAL_FACELETS} stickers`);
-  }
-  const counts = countFacelets(state);
-  for (const face of FACES) {
-    if (counts[face] !== STICKERS_PER_FACE) {
-      messages.push(
-        `${FACE_NAMES[face]} color has ${counts[face]} stickers, expected ${STICKERS_PER_FACE}`,
-      );
-    }
-  }
-  for (const face of FACES) {
-    const centerIndex = FACES.indexOf(face) * STICKERS_PER_FACE + 4;
-    if (state[centerIndex] !== face) {
-      messages.push(`${FACE_NAMES[face]} center must stay ${face}`);
-    }
-  }
-  return {
-    ok: messages.length === 0,
-    messages,
-  };
-}
-
-function countFacelets(state: Face[]) {
-  return state.reduce<Record<Face, number>>(
-    (acc, face) => {
-      acc[face] += 1;
-      return acc;
-    },
-    { U: 0, R: 0, F: 0, D: 0, L: 0, B: 0 },
-  );
 }
 
 function makeCube(state: string) {
