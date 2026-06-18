@@ -11,4 +11,6 @@ Currently, only the latest release is supported with security updates.
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability within this project, please do not disclose it publicly. Instead, contact the repository owner privately via their GitHub profile contact information. We will prioritize reviewing and addressing the issue as quickly as possible.
+If you discover a security vulnerability within this project, please do not disclose it publicly.
+Instead, contact the repository owner privately via their GitHub profile contact information. We
+will prioritize reviewing and addressing the issue as quickly as possible.
