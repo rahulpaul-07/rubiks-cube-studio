@@ -98,9 +98,9 @@ unloads.
 
 ### Validation scope
 
-The application validates facelet count, color balance, and center positions. Full cubie-level
-validation (edge/corner permutation parity and orientation) is not yet implemented—a color-balanced
-state can still be physically impossible.
+The application validates facelet count, color balance, and center positions natively. It then
+relies on the `cubejs` engine to perform full cubie-level validation (edge/corner permutation parity
+and orientation) to catch physically impossible states.
 
 ## Testing
 

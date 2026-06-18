@@ -52,11 +52,21 @@ function bindEvents() {
   elements.scrambleBtn.addEventListener("click", scrambleCube);
   elements.validateBtn.addEventListener("click", () => {
     const validation = validateFacelets(appState.facelets);
-    setStatus(
-      elements,
-      validation.ok ? "Looks valid" : validation.issues[0].message,
-      validation.ok ? "good" : "warn",
-    );
+    if (!validation.ok) {
+      setStatus(elements, validation.issues[0].message, "warn");
+      return;
+    }
+    try {
+      Cube.fromString(serializeFacelets(appState.facelets));
+      setStatus(elements, "Cube is valid and solvable", "good");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "The solver rejected this cube";
+      setStatus(
+        elements,
+        message.includes("Error") ? "The cube state is physically impossible" : message,
+        "warn",
+      );
+    }
   });
   elements.resetBtn.addEventListener("click", () => {
     stopPlayback();
