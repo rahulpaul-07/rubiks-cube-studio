@@ -40,9 +40,13 @@ function startApp() {
   window.addEventListener("pagehide", disposeApp, { once: true });
 
   if ("requestIdleCallback" in window) {
-    window.requestIdleCallback(() => cubeSolver.initialize());
+    window.requestIdleCallback(() => {
+      void cubeSolver.initialize();
+    });
   } else {
-    setTimeout(() => cubeSolver.initialize(), 1000);
+    setTimeout(() => {
+      void cubeSolver.initialize();
+    }, 1000);
   }
 }
 
