@@ -1,4 +1,12 @@
 import "./styles.css";
+import {
+  FACES,
+  FACE_NAMES,
+  SOLVED_FACELETS,
+  STICKERS_PER_FACE,
+  TOTAL_FACELETS,
+  type Face,
+} from "./domain/cube";
 import { Cube, ensureSolverLoaded } from "./solver";
 import {
   Check,
@@ -16,18 +24,7 @@ import {
 } from "lucide";
 import * as THREE from "three";
 
-type Face = "U" | "R" | "F" | "D" | "L" | "B";
 type Tone = "neutral" | "good" | "warn" | "bad";
-
-const FACES: Face[] = ["U", "R", "F", "D", "L", "B"];
-const FACE_NAMES: Record<Face, string> = {
-  U: "Up",
-  R: "Right",
-  F: "Front",
-  D: "Down",
-  L: "Left",
-  B: "Back",
-};
 
 const FACE_COLORS: Record<Face, string> = {
   U: "#f8fafc",
@@ -47,7 +44,6 @@ const FACE_TEXT: Record<Face, string> = {
   B: "#ffffff",
 };
 
-const SOLVED = FACES.map((face) => face.repeat(9)).join("");
 const VALID_FACELET = /^[URFDLB]$/;
 const MOVE_PATTERN = /^[URFDLBMESxyzurfdlb](2|'|)?$/;
 const SCRAMBLE_LENGTH = 24;
@@ -194,7 +190,7 @@ const elements = {
 };
 
 let selectedFace: Face = "F";
-let facelets = stringToFacelets(SOLVED);
+let facelets = stringToFacelets(SOLVED_FACELETS);
 let solverReady = false;
 let solutionBase = "";
 let solutionMoves: string[] = [];
@@ -233,7 +229,7 @@ function bindEvents() {
   elements.resetBtn.addEventListener("click", () => {
     stopPlayback();
     lastScramble = "";
-    setFacelets(stringToFacelets(SOLVED), { clearSolution: true });
+    setFacelets(stringToFacelets(SOLVED_FACELETS), { clearSolution: true });
     renderAll("Reset to solved", "neutral");
   });
   elements.resetViewBtn.addEventListener("click", () => preview.resetView());
@@ -293,8 +289,8 @@ function renderNet() {
     const grid = document.createElement("div");
     grid.className = "stickers";
 
-    for (let localIndex = 0; localIndex < 9; localIndex += 1) {
-      const globalIndex = faceIndex * 9 + localIndex;
+    for (let localIndex = 0; localIndex < STICKERS_PER_FACE; localIndex += 1) {
+      const globalIndex = faceIndex * STICKERS_PER_FACE + localIndex;
       const stickerFace = facelets[globalIndex];
       const button = document.createElement("button");
       button.type = "button";
@@ -320,7 +316,7 @@ function renderNet() {
 function renderColorBalance() {
   const counts = countFacelets(facelets);
   elements.colorBalance.innerHTML = FACES.map((face) => {
-    const ok = counts[face] === 9;
+    const ok = counts[face] === STICKERS_PER_FACE;
     return `
       <div class="count ${ok ? "ok" : "warn"}">
         <span class="mini-swatch" style="--swatch:${FACE_COLORS[face]}"></span>
@@ -396,8 +392,8 @@ function setFacelets(nextFacelets: Face[], options: { clearSolution?: boolean } 
 
 function importFaceletString() {
   const raw = elements.stateInput.value.toUpperCase().replace(/\s+/g, "");
-  if (raw.length !== 54 || [...raw].some((char) => !VALID_FACELET.test(char))) {
-    setStatus("Paste 54 characters using U, R, F, D, L, B", "warn");
+  if (raw.length !== TOTAL_FACELETS || [...raw].some((char) => !VALID_FACELET.test(char))) {
+    setStatus(`Paste ${TOTAL_FACELETS} characters using U, R, F, D, L, B`, "warn");
     return;
   }
   stopPlayback();
@@ -555,17 +551,19 @@ function setStatus(message: string, tone: Tone) {
 
 function validateFacelets(state: Face[]) {
   const messages: string[] = [];
-  if (state.length !== 54) {
-    messages.push("A 3x3 cube needs 54 stickers");
+  if (state.length !== TOTAL_FACELETS) {
+    messages.push(`A 3x3 cube needs ${TOTAL_FACELETS} stickers`);
   }
   const counts = countFacelets(state);
   for (const face of FACES) {
-    if (counts[face] !== 9) {
-      messages.push(`${FACE_NAMES[face]} color has ${counts[face]} stickers, expected 9`);
+    if (counts[face] !== STICKERS_PER_FACE) {
+      messages.push(
+        `${FACE_NAMES[face]} color has ${counts[face]} stickers, expected ${STICKERS_PER_FACE}`,
+      );
     }
   }
   for (const face of FACES) {
-    const centerIndex = FACES.indexOf(face) * 9 + 4;
+    const centerIndex = FACES.indexOf(face) * STICKERS_PER_FACE + 4;
     if (state[centerIndex] !== face) {
       messages.push(`${FACE_NAMES[face]} center must stay ${face}`);
     }
@@ -617,13 +615,12 @@ function splitMoves(value: string) {
 }
 
 function createScramble(length: number) {
-  const faces: Face[] = ["U", "R", "F", "D", "L", "B"];
   const suffixes = ["", "'", "2"];
   const moves: string[] = [];
   let previousFace = "";
 
   while (moves.length < length) {
-    const face = faces[Math.floor(Math.random() * faces.length)];
+    const face = FACES[Math.floor(Math.random() * FACES.length)];
     if (face === previousFace) {
       continue;
     }
@@ -764,8 +761,8 @@ class CubePreview {
 }
 
 function stickerPlacement(index: number) {
-  const face = FACES[Math.floor(index / 9)];
-  const local = index % 9;
+  const face = FACES[Math.floor(index / STICKERS_PER_FACE)];
+  const local = index % STICKERS_PER_FACE;
   const row = Math.floor(local / 3);
   const col = local % 3;
   const spacing = 1.04;
