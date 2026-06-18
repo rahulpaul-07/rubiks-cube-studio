@@ -3,6 +3,7 @@ import type { SolveResult, SolverService } from "./types";
 
 export class CubeJsSolver implements SolverService {
   private initialized = false;
+  private initialization: Promise<void> | null = null;
 
   get ready(): boolean {
     return this.initialized;
@@ -13,6 +14,17 @@ export class CubeJsSolver implements SolverService {
       return;
     }
 
+    this.initialization ??= this.loadSolver();
+
+    try {
+      await this.initialization;
+    } catch (error) {
+      this.initialization = null;
+      throw error;
+    }
+  }
+
+  private async loadSolver(): Promise<void> {
     const { default: solveSource } = await import("cubejs/lib/solve.js?raw");
     const requireShim = (path: string) => {
       if (path === "./cube") {
