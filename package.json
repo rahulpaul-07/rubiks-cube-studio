@@ -1,6 +1,19 @@
 {
   "name": "rubiks-cube-studio",
   "version": "1.0.0",
+  "description": "Interactive 3x3 Rubik's Cube editor and solver built with TypeScript and Three.js",
+  "author": "Rahul Paul",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rahulpaul-07/rubiks-cube-studio.git"
+  },
+  "keywords": [
+    "rubiks-cube",
+    "threejs",
+    "typescript",
+    "solver",
+    "kociemba"
+  ],
   "private": true,
   "license": "MIT",
   "type": "module",
