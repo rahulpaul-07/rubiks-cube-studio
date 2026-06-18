@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <rect width="800" height="600" fill="#18212f"/>
+  <text x="400" y="300" fill="#f8fafc" font-family="sans-serif" font-size="48" text-anchor="middle">Rubik's Cube Studio</text>
+  <text x="400" y="350" fill="#f8fafc" font-family="sans-serif" font-size="24" text-anchor="middle">Interactive 3D Preview</text>
+</svg>

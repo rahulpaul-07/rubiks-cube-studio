@@ -6,6 +6,8 @@
 An interactive 3×3 Rubik's Cube editor and solver built with TypeScript, Three.js, and the Kociemba
 two-phase algorithm.
 
+![App Screenshot](./public/screenshot.svg)
+
 Users can paint or import a cube state, validate sticker counts and centers, generate a scramble,
 apply move notation, solve the cube, and inspect the solution through step-by-step playback.
 
@@ -106,9 +108,7 @@ The application currently validates:
 - Supported face identifiers
 - Nine stickers per color
 - Fixed center positions
-
-Full physical-state validation—including cubie uniqueness, orientation, and permutation parity—is
-planned. Until implemented, a color-balanced state can still be physically impossible.
+- Physical cubie-level uniqueness, parity, and orientation (via the `cubejs` solver engine)
 
 ## Deployment
 
