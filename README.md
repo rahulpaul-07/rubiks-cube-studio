@@ -6,7 +6,7 @@
 An interactive 3×3 Rubik's Cube editor and solver built with TypeScript, Three.js, and the Kociemba
 two-phase algorithm.
 
-![App Screenshot](./public/screenshot.svg)
+![App Screenshot](./public/screenshot.png)
 
 Users can paint or import a cube state, validate sticker counts and centers, generate a scramble,
 apply move notation, solve the cube, and inspect the solution through step-by-step playback.
