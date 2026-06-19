@@ -20,3 +20,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - PWA manifest and theme colors for installability
 - Strict type checking and automated testing with Vitest and Playwright
 - GitHub Actions CI/CD workflows and automated Dependabot updates
+- Improved accessibility with skip links, \`aria-live\` regions, and keyboard shortcuts
+- Split vendor chunks in production build to optimize caching
+- Added standard repository templates (\`ISSUE_TEMPLATE\`, \`PULL_REQUEST_TEMPLATE\`)
+- Configured \`no-console\` ESLint rules for cleaner production builds
