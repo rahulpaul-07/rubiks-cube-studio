@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://rahulpaul-07.github.io/rubiks-cube-studio/sitemap.xml
+Sitemap: https://rubiks-cube-studio.vercel.app/sitemap.xml

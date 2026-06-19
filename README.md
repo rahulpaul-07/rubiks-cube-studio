@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/rahulpaul-07/rubiks-cube-studio/actions/workflows/ci.yml/badge.svg)](https://github.com/rahulpaul-07/rubiks-cube-studio/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Frahulpaul-07%2Frubiks-cube-studio)
 
 An interactive 3×3 Rubik's Cube editor and solver built with TypeScript, Three.js, and the Kociemba
 two-phase algorithm.

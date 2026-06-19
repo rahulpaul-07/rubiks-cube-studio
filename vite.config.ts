@@ -1,7 +1,6 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  base: "/rubiks-cube-studio/",
   build: {
     chunkSizeWarningLimit: 650,
     sourcemap: true,
