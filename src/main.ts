@@ -27,6 +27,7 @@ let preview: CubePreview;
 
 function startApp() {
   window.addEventListener("error", (e) => {
+    // eslint-disable-next-line no-console
     console.error("Unhandled application error:", e.error);
     const statusPill = document.getElementById("statusPill");
     if (statusPill) {
