@@ -13,6 +13,7 @@ export default defineConfig({
           if (id.includes("node_modules/cubejs")) {
             return "cubejs";
           }
+          return undefined;
         },
       },
     },
