@@ -317,7 +317,11 @@ function togglePlayback() {
   if (appState.playbackStep >= appState.solutionMoves.length) {
     stepPlayback(0);
   }
-  playTimer = window.setInterval(() => stepPlayback(appState.playbackStep + 1), 520);
+  const PLAYBACK_INTERVAL_MS = 520;
+  playTimer = window.setInterval(
+    () => stepPlayback(appState.playbackStep + 1),
+    PLAYBACK_INTERVAL_MS,
+  );
   renderSolution(elements, appState, !!playTimer);
 }
 
