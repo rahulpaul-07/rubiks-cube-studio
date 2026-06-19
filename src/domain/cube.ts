@@ -21,7 +21,7 @@ export const TOTAL_FACELETS = FACES.length * STICKERS_PER_FACE;
 /**
  * Human-readable names for each face.
  */
-export const FACE_NAMES: Record<Face, string> = {
+export const FACE_NAMES: Readonly<Record<Face, string>> = {
   U: "Up",
   R: "Right",
   F: "Front",
