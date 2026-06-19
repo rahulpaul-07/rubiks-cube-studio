@@ -1,2 +1,3 @@
 User-agent: *
 Allow: /
+Sitemap: https://rubiks-cube-studio.web.app/sitemap.xml
