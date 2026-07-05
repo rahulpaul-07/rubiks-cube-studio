@@ -39,6 +39,7 @@ export class CubePreview {
     this.bindPointer();
     this.resize();
     window.addEventListener("resize", this.resize);
+    document.addEventListener("visibilitychange", this.handleVisibilityChange);
     this.animate();
   }
 
@@ -60,6 +61,7 @@ export class CubePreview {
   dispose(): void {
     window.cancelAnimationFrame(this.animationFrame);
     window.removeEventListener("resize", this.resize);
+    document.removeEventListener("visibilitychange", this.handleVisibilityChange);
 
     const canvas = this.renderer.domElement;
     canvas.removeEventListener("pointerdown", this.handlePointerDown);
@@ -140,6 +142,17 @@ export class CubePreview {
     this.renderer.setSize(width, height, false);
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
+  };
+
+  // The preview otherwise renders at full frame rate forever, even when the
+  // tab is backgrounded, which wastes battery/CPU for no visible benefit.
+  private readonly handleVisibilityChange = (): void => {
+    if (document.hidden) {
+      window.cancelAnimationFrame(this.animationFrame);
+      this.animationFrame = 0;
+    } else if (this.animationFrame === 0) {
+      this.animate();
+    }
   };
 
   private animate = (): void => {
