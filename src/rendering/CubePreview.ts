@@ -96,6 +96,8 @@ export class CubePreview {
   private lastTimestamp = 0;
   private activeTurn: ActiveTurn | null = null;
   private turnDurationMs = 320;
+  private readonly reducedMotion =
+    typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   constructor(private readonly host: HTMLElement) {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -320,7 +322,7 @@ export class CubePreview {
 
     if (this.activeTurn) {
       this.advanceTurn(delta);
-    } else if (!this.drag.active) {
+    } else if (!this.drag.active && !this.reducedMotion) {
       this.cubeGroup.rotation.y += 0.002;
     }
 

@@ -5,8 +5,9 @@
 [![Live Demo](https://img.shields.io/badge/demo-live-brightgreen.svg)](https://rubiks-cube-studio.vercel.app)
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Frahulpaul-07%2Frubiks-cube-studio)
 
-An interactive 3×3 Rubik's Cube editor and solver built with TypeScript, Three.js, and the Kociemba
-two-phase algorithm.
+An interactive 3×3 Rubik's Cube studio: **scan a real cube with your webcam**, verify the colors,
+and watch a **hand-written Kociemba two-phase solver** — running in a Web Worker — drive an
+**animated 3D solution**. Built with TypeScript and Three.js, with no third-party solver at runtime.
 
 **[Try the live demo →](https://rubiks-cube-studio.vercel.app)**
 
@@ -14,6 +15,27 @@ two-phase algorithm.
 
 Users can paint or import a cube state, validate sticker counts and centers, generate a scramble,
 apply move notation, solve the cube, and inspect the solution through step-by-step playback.
+
+## Highlights
+
+- 🧠 **Custom two-phase solver, from scratch** — cubie model, coordinate reduction, move and pruning
+  tables, and IDA\* search. No runtime solver dependency. Averages **~20.6 moves** (God's number
+  is 20) and is **100% correct** across 1,500+ random cubes, verified against an independent engine.
+- 📷 **Webcam cube scanning** — capture all six faces and classify stickers with an HSV color
+  pipeline.
+- 🎞️ **Animated 3D playback** — every solution move is a real layer rotation, run off the main
+  thread so rendering never stutters.
+- 🧪 **Engineered like production** — 66 unit tests, Playwright end-to-end tests, strict TypeScript,
+  a zero-warning ESLint pass, coverage thresholds, and CI on every push.
+
+## Data flow
+
+```mermaid
+flowchart LR
+  Scan["📷 Scan (webcam)"] --> Verify["🎨 Verify colors"]
+  Verify --> Solve["🧠 Solve (Web Worker)"]
+  Solve --> Play["🎞️ Animated playback"]
+```
 
 ## Features
 
@@ -28,7 +50,10 @@ apply move notation, solve the cube, and inspect the solution through step-by-st
 - Custom Kociemba two-phase solver running in a Web Worker (no runtime solver dependency)
 - Solution timing, move count, copying, and playback controls
 - Responsive desktop and mobile layouts
-- Web App Manifest (PWA), SEO meta tags, and accessible focus states
+- Installable PWA with offline support via a service worker (works with no network after first load)
+- Accessibility: keyboard-operable controls, focus-trapped scan modal, and `prefers-reduced-motion`
+  support
+- SEO meta tags, Open Graph/Twitter cards, and a Web App Manifest
 - Render loop pauses automatically on backgrounded tabs to save battery and CPU
 
 ## Custom two-phase solver
@@ -83,12 +108,24 @@ The codebase separates cube rules from browser-specific behavior:
 ```text
 src/
 ├── app/        Application state and actions
-├── domain/     Cube representation, parsing, notation, scrambles, and validation
-├── rendering/  Three.js preview and sticker placement
-├── solver/     Solver interface and cubejs adapter
+├── domain/     Cube rules, parsing, notation, scrambles, validation, color detection
+├── scan/       Webcam capture and sticker sampling
+├── rendering/  Three.js preview, animated face turns, sticker placement
+├── solver/     Web Worker client + from-scratch two-phase solver (twophase/)
 ├── styles/     Base, component, and design-token styles
 ├── ui/         DOM access and application template
 └── main.ts     Application orchestration and event handling
+```
+
+```mermaid
+flowchart TD
+  UI["ui / main.ts"] --> APP["app · state + reducer"]
+  SCAN["scan · webcam"] --> APP
+  REND["rendering · Three.js + animation"] --> APP
+  APP --> DOMAIN["domain · pure cube logic"]
+  APP --> CLIENT["solver client"]
+  CLIENT -. "postMessage" .-> WORKER[["two-phase solver Web Worker"]]
+  WORKER --> TWOPHASE["twophase · cube · coords · tables · search"]
 ```
 
 Dependencies flow from the UI and rendering layers toward the application and domain layers. The
@@ -99,8 +136,9 @@ domain modules do not depend on the DOM, Three.js, or the solver implementation.
 
 Every change runs through the same checks locally and in CI:
 
-- **54 unit tests** across 8 files (Vitest), covering domain logic, the state reducer, and the
-  solver adapter, with no DOM dependency required for the pure `domain/` modules.
+- **66 unit tests** across 11 files (Vitest), covering domain logic, the state reducer, the
+  animation math, color detection, and the two-phase solver — the solver's output is re-verified
+  move-for-move by an independent engine. **Coverage thresholds** are enforced in CI.
 - **End-to-end tests** (Playwright) exercising the real browser flow: load, scramble, apply moves,
   and solve.
 - **Strict TypeScript** (`tsc --noEmit`) and a zero-warning **ESLint** pass on every commit.
