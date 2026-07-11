@@ -9,6 +9,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- From-scratch Kociemba two-phase solver (`src/solver/twophase/`) running in a Web Worker, replacing
+  the `cubejs` solver at runtime. Validated for correctness against an independent engine across
+  thousands of random cubes; averages ~20.6 moves.
+- `npm run benchmark` harness reporting solver move-count distribution and timing.
 - Webcam cube scanning (`src/scan/CubeScanner.ts`) with HSV-based sticker-color detection
   (`src/domain/colorDetection.ts`).
 - Animated individual face turns during solution playback via a rebuilt `CubePreview` and a verified
