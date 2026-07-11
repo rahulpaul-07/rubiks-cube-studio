@@ -1,4 +1,5 @@
 import {
+  Camera,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -23,6 +24,15 @@ export function renderAppTemplate(root: HTMLElement): void {
         </div>
         <div class="status-pill" id="statusPill" role="status" aria-live="polite">Ready</div>
       </header>
+
+      <nav class="wizard" id="wizard" aria-label="Solve progress">
+        <ol>
+          <li class="wizard-step" data-stage="scan"><span class="wizard-num">1</span><span class="wizard-label">Scan</span></li>
+          <li class="wizard-step" data-stage="verify"><span class="wizard-num">2</span><span class="wizard-label">Verify</span></li>
+          <li class="wizard-step" data-stage="solve"><span class="wizard-num">3</span><span class="wizard-label">Solve</span></li>
+          <li class="wizard-step" data-stage="play"><span class="wizard-num">4</span><span class="wizard-label">Play</span></li>
+        </ol>
+      </nav>
 
       <main class="workspace" id="main-workspace">
         <section class="panel preview-panel" aria-label="Cube preview">
@@ -63,6 +73,7 @@ export function renderAppTemplate(root: HTMLElement): void {
           </div>
 
           <div class="button-grid">
+            <button class="btn" id="scanBtn" type="button">${createLabeledIcon(Camera, "Scan")}</button>
             <button class="btn primary" id="solveBtn" type="button">${createLabeledIcon(Sparkles, "Solve")}</button>
             <button class="btn" id="scrambleBtn" type="button">${createLabeledIcon(Shuffle, "Scramble")}</button>
             <button class="btn" id="validateBtn" type="button">${createLabeledIcon(Check, "Validate")}</button>

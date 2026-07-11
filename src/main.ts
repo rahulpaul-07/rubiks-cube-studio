@@ -6,24 +6,45 @@ import { parseAlgorithm, splitMoves } from "./domain/notation";
 import { createScramble } from "./domain/scramble";
 import { validateFacelets } from "./domain/validation";
 import { CubePreview } from "./rendering/CubePreview";
+import { invertMove } from "./rendering/moveRotation";
 import { cubeSolver } from "./solver/cubejsSolver";
+import { CubeScanner } from "./scan/CubeScanner";
 import { getAppElements, getAppRoot } from "./ui/dom";
 import { renderAppTemplate } from "./ui/template";
 import {
   renderAll,
   renderFaceletState,
+  renderNet,
   renderSolution,
+  renderStateInput,
   setStatus,
   updateStateLabels,
 } from "./ui/view";
 import Cube from "cubejs";
 
+const TURN_DURATION_MS = 320;
+const PLAYBACK_GAP_MS = 90;
+
 renderAppTemplate(getAppRoot());
 const elements = getAppElements();
 
 let appState = createInitialState();
-let playTimer = 0;
+let playing = false;
+let animating = false;
 let preview: CubePreview;
+let scanner: CubeScanner | null = null;
+
+type Stage = "scan" | "verify" | "solve" | "play";
+const STAGE_ORDER: readonly Stage[] = ["scan", "verify", "solve", "play"];
+
+function setStage(next: Stage) {
+  const activeIndex = STAGE_ORDER.indexOf(next);
+  elements.wizard.querySelectorAll<HTMLElement>(".wizard-step").forEach((el) => {
+    const index = STAGE_ORDER.indexOf(el.dataset.stage as Stage);
+    el.classList.toggle("active", index === activeIndex);
+    el.classList.toggle("done", index < activeIndex);
+  });
+}
 
 function startApp() {
   window.addEventListener("error", (e) => {
@@ -37,15 +58,9 @@ function startApp() {
   });
 
   preview = new CubePreview(elements.preview);
-  renderAll(
-    elements,
-    appState,
-    preview,
-    !!playTimer,
-    { onSelectFace, onPaint },
-    "Ready",
-    "neutral",
-  );
+  preview.setTurnDuration(TURN_DURATION_MS);
+  renderAll(elements, appState, preview, playing, { onSelectFace, onPaint }, "Ready", "neutral");
+  setStage("scan");
   bindEvents();
   window.addEventListener("pagehide", disposeApp, { once: true });
 
@@ -66,6 +81,7 @@ function disposeApp() {
 }
 
 function bindEvents() {
+  elements.scanBtn.addEventListener("click", openScanner);
   elements.solveBtn.addEventListener("click", () => {
     void solveCurrentState();
   });
@@ -95,11 +111,12 @@ function bindEvents() {
       elements,
       appState,
       preview,
-      !!playTimer,
+      playing,
       { onSelectFace, onPaint },
       "Reset to solved",
       "neutral",
     );
+    setStage("scan");
   });
   elements.resetViewBtn.addEventListener("click", () => preview.resetView());
   elements.applyAlgorithmBtn.addEventListener("click", applyAlgorithm);
@@ -111,8 +128,8 @@ function bindEvents() {
   });
   elements.stateInput.addEventListener("input", importFaceletString);
   elements.copyBtn.addEventListener("click", copySolution);
-  elements.prevStepBtn.addEventListener("click", () => stepPlayback(appState.playbackStep - 1));
-  elements.nextStepBtn.addEventListener("click", () => stepPlayback(appState.playbackStep + 1));
+  elements.prevStepBtn.addEventListener("click", () => void stepBackward());
+  elements.nextStepBtn.addEventListener("click", () => void stepForward());
   elements.playBtn.addEventListener("click", togglePlayback);
 
   window.addEventListener("keydown", (event) => {
@@ -125,10 +142,10 @@ function bindEvents() {
         togglePlayback();
         break;
       case "ArrowLeft":
-        stepPlayback(appState.playbackStep - 1);
+        void stepBackward();
         break;
       case "ArrowRight":
-        stepPlayback(appState.playbackStep + 1);
+        void stepForward();
         break;
       case "s":
       case "S":
@@ -144,15 +161,40 @@ function bindEvents() {
   });
 }
 
+function openScanner() {
+  stopPlayback();
+  scanner = new CubeScanner({
+    onComplete: (facelets) => {
+      scanner = null;
+      setFacelets(facelets, { clearSolution: true });
+      renderAll(
+        elements,
+        appState,
+        preview,
+        playing,
+        { onSelectFace, onPaint },
+        "Scanned - verify the colors, then Solve",
+        "good",
+      );
+      setStage("verify");
+    },
+    onCancel: () => {
+      scanner = null;
+    },
+  });
+  void scanner.open();
+}
+
 function onSelectFace(face: Face) {
   appState = reduceAppState(appState, { type: "select-face", face });
-  renderAll(elements, appState, preview, !!playTimer, { onSelectFace, onPaint });
+  renderAll(elements, appState, preview, playing, { onSelectFace, onPaint });
 }
 
 function paintSticker(index: number) {
   stopPlayback();
   appState = reduceAppState(appState, { type: "paint-sticker", index });
-  renderFaceletState(elements, appState, preview, !!playTimer, { onPaint }, { colorBalance: true });
+  renderFaceletState(elements, appState, preview, playing, { onPaint }, { colorBalance: true });
+  setStage("verify");
   setStatus(elements, "Sticker updated", "neutral");
 }
 
@@ -176,7 +218,8 @@ function importFaceletString() {
   }
   stopPlayback();
   setFacelets(parsed.facelets, { clearSolution: true });
-  renderFaceletState(elements, appState, preview, !!playTimer, { onPaint }, { colorBalance: true });
+  renderFaceletState(elements, appState, preview, playing, { onPaint }, { colorBalance: true });
+  setStage("verify");
   setStatus(elements, "Facelet string imported", "neutral");
 }
 
@@ -198,7 +241,8 @@ function applyAlgorithm() {
     stopPlayback();
     setFacelets(faceletsFromCubeString(cube.asString()), { clearSolution: true });
     elements.algorithmInput.value = "";
-    renderFaceletState(elements, appState, preview, !!playTimer, { onPaint });
+    renderFaceletState(elements, appState, preview, playing, { onPaint });
+    setStage("verify");
     setStatus(elements, "Moves applied", "good");
   } catch {
     setStatus(elements, "That move notation is not supported", "warn");
@@ -216,7 +260,8 @@ function scrambleCube() {
     lastScramble: scramble,
     clearSolution: true,
   });
-  renderFaceletState(elements, appState, preview, !!playTimer, { onPaint });
+  renderFaceletState(elements, appState, preview, playing, { onPaint });
+  setStage("verify");
   setStatus(elements, "Scramble generated", "good");
 }
 
@@ -249,8 +294,9 @@ async function solveCurrentState() {
       moves: splitMoves(result.algorithm),
     });
 
-    renderSolution(elements, appState, !!playTimer);
+    renderSolution(elements, appState, playing);
     updateStateLabels(elements, appState);
+    setStage("solve");
 
     if (appState.solutionMoves.length === 0) {
       setStatus(elements, "Cube is already solved", "good");
@@ -284,11 +330,16 @@ function copySolution() {
   }
 }
 
-function stepPlayback(nextStep: number) {
-  if (!appState.solutionMoves.length || !appState.solutionBase) {
+/**
+ * Recomputes the facelet array for the current playback step and refreshes the
+ * 2D editor, textarea, and status labels -- without rebuilding the animated
+ * 3D preview, whose cubies are already in the correct positions from the turn
+ * that just played.
+ */
+function syncFaceletsToStep() {
+  if (!appState.solutionBase) {
     return;
   }
-  appState = reduceAppState(appState, { type: "set-playback-step", step: nextStep });
   const cube = Cube.fromString(appState.solutionBase);
   const prefix = appState.solutionMoves.slice(0, appState.playbackStep).join(" ");
   if (prefix) {
@@ -299,37 +350,104 @@ function stepPlayback(nextStep: number) {
     facelets: faceletsFromCubeString(cube.asString()),
     lastScramble: appState.lastScramble,
   });
-  renderFaceletState(elements, appState, preview, !!playTimer, { onPaint });
+  renderNet(elements, appState, onPaint);
+  renderStateInput(elements, appState);
+  updateStateLabels(elements, appState);
+}
+
+async function stepForward() {
+  if (animating || !appState.solutionMoves.length) {
+    return;
+  }
   if (appState.playbackStep >= appState.solutionMoves.length) {
-    stopPlayback();
+    return;
+  }
+  const token = appState.solutionMoves[appState.playbackStep];
+  animating = true;
+  setStage("play");
+  appState = reduceAppState(appState, {
+    type: "set-playback-step",
+    step: appState.playbackStep + 1,
+  });
+  renderSolution(elements, appState, playing);
+  await preview.animateMove(token);
+  syncFaceletsToStep();
+  animating = false;
+  if (!playing && appState.playbackStep >= appState.solutionMoves.length) {
     setStatus(elements, "Playback complete", "good");
   }
+}
+
+async function stepBackward() {
+  if (animating || appState.playbackStep <= 0) {
+    return;
+  }
+  const token = invertMove(appState.solutionMoves[appState.playbackStep - 1]);
+  animating = true;
+  appState = reduceAppState(appState, {
+    type: "set-playback-step",
+    step: appState.playbackStep - 1,
+  });
+  renderSolution(elements, appState, playing);
+  await preview.animateMove(token);
+  syncFaceletsToStep();
+  animating = false;
+}
+
+function jumpToStep(step: number) {
+  if (!appState.solutionMoves.length || !appState.solutionBase) {
+    return;
+  }
+  appState = reduceAppState(appState, { type: "set-playback-step", step });
+  const cube = Cube.fromString(appState.solutionBase);
+  const prefix = appState.solutionMoves.slice(0, appState.playbackStep).join(" ");
+  if (prefix) {
+    cube.move(prefix);
+  }
+  appState = reduceAppState(appState, {
+    type: "replace-facelets",
+    facelets: faceletsFromCubeString(cube.asString()),
+    lastScramble: appState.lastScramble,
+  });
+  renderFaceletState(elements, appState, preview, playing, { onPaint });
 }
 
 function togglePlayback() {
   if (!appState.solutionMoves.length) {
     return;
   }
-  if (playTimer) {
+  if (playing) {
     stopPlayback();
     return;
   }
   if (appState.playbackStep >= appState.solutionMoves.length) {
-    stepPlayback(0);
+    jumpToStep(0);
   }
-  const PLAYBACK_INTERVAL_MS = 520;
-  playTimer = window.setInterval(
-    () => stepPlayback(appState.playbackStep + 1),
-    PLAYBACK_INTERVAL_MS,
-  );
-  renderSolution(elements, appState, !!playTimer);
+  playing = true;
+  setStage("play");
+  renderSolution(elements, appState, playing);
+  void runPlayLoop();
+}
+
+async function runPlayLoop() {
+  while (playing && appState.playbackStep < appState.solutionMoves.length) {
+    await stepForward();
+    if (!playing) {
+      break;
+    }
+    await new Promise((resolve) => setTimeout(resolve, PLAYBACK_GAP_MS));
+  }
+  if (appState.playbackStep >= appState.solutionMoves.length) {
+    playing = false;
+    renderSolution(elements, appState, playing);
+    setStatus(elements, "Playback complete", "good");
+  }
 }
 
 function stopPlayback() {
-  if (playTimer) {
-    window.clearInterval(playTimer);
-    playTimer = 0;
-    renderSolution(elements, appState, !!playTimer);
+  if (playing) {
+    playing = false;
+    renderSolution(elements, appState, playing);
   }
 }
 
