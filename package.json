@@ -37,7 +37,8 @@
     "lint:fix": "eslint . --fix",
     "preview": "vite preview --host 127.0.0.1",
     "typecheck": "tsc --noEmit",
-    "prepare": "husky"
+    "prepare": "husky",
+    "benchmark": "vite-node src/solver/benchmark.ts"
   },
   "dependencies": {
     "cubejs": "1.1.0",
@@ -58,6 +59,7 @@
     "typescript": "^6.0.3",
     "typescript-eslint": "8.61.1",
     "vite": "^8.0.16",
+    "vite-node": "^3.2.4",
     "vitest": "^4.1.9"
   },
   "lint-staged": {

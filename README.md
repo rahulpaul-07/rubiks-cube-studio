@@ -25,18 +25,53 @@ apply move notation, solve the cube, and inspect the solution through step-by-st
 - Facelet-string import and export
 - Standard move-notation input
 - Random scramble generation
-- Lazy-loaded Kociemba solver
+- Custom Kociemba two-phase solver running in a Web Worker (no runtime solver dependency)
 - Solution timing, move count, copying, and playback controls
 - Responsive desktop and mobile layouts
 - Web App Manifest (PWA), SEO meta tags, and accessible focus states
 - Render loop pauses automatically on backgrounded tabs to save battery and CPU
+
+## Custom two-phase solver
+
+The cube is solved by a **from-scratch implementation of Kociemba's two-phase algorithm** — there is
+no third-party solver at runtime. It runs entirely inside a **Web Worker**, so building lookup
+tables and searching never block rendering or the turn animation.
+
+**How it works.** The solver models the cube at the cubie level (corner and edge permutation and
+orientation) and reduces solving to a search over compact integer _coordinates_:
+
+- **Phase 1** drives the cube into the ⟨U, D, R2, L2, F2, B2⟩ subgroup (G1) using
+  corner-orientation, edge-orientation, and UD-slice-location coordinates.
+- **Phase 2** finishes within G1 using corner-permutation, edge-permutation, and slice-permutation
+  coordinates.
+
+Each coordinate has a precomputed **move table**, and admissible **pruning tables** (built by
+breadth-first search outward from the goal) provide a lower bound on the remaining depth. An
+**IDA\*** search uses those bounds to find a short solution, then keeps refining toward the optimum
+within a time budget. Physically impossible cubes (wrong permutation parity, a single flipped edge,
+and so on) are rejected up front.
+
+**Measured performance** (`npm run benchmark`):
+
+| Metric                            | Result                                                           |
+| --------------------------------- | ---------------------------------------------------------------- |
+| Correctness                       | 100% over 1,500+ random cubes, verified by an independent engine |
+| Average solution                  | ~20.6 moves (God's number is 20)                                 |
+| Longest solution                  | ≤ 23 moves; every solve within 26 HTM                            |
+| Table build (one-time, in worker) | ~0.7 s                                                           |
+| Solve budget                      | 100 ms per cube                                                  |
+
+Every one of the solver's 18 face moves and every coordinate transition is unit-tested against a
+reference engine (`cubejs`, used **only** in tests), and full solutions are re-verified
+move-for-move by that independent engine on thousands of random cubes (`src/solver/twophase/`).
 
 ## Technology
 
 - **TypeScript** for strict application and domain types
 - **Vite** for local development and production builds
 - **Three.js** for the interactive WebGL preview
-- **cubejs** for cube transformations and Kociemba solving
+- **A hand-written Kociemba two-phase solver** in a Web Worker (`src/solver/twophase/`)
+- **cubejs** as an independent solver oracle in the test suite only
 - **ESLint and Prettier** for automated code-quality checks
 - **Vitest** and **Playwright** for unit and end-to-end testing
 - **GitHub Actions** for continuous integration
@@ -116,6 +151,7 @@ Vite serves the application at `http://127.0.0.1:5173` by default.
 | `npm run format:check`  | Verify formatting without modifying files                       |
 | `npm run lint`          | Run ESLint                                                      |
 | `npm run typecheck`     | Run TypeScript without emitting files                           |
+| `npm run benchmark`     | Benchmark the two-phase solver (move count, timing, throughput) |
 | `npm run check`         | Run formatting, linting, type checking, tests, and build checks |
 
 ## Cube representation
@@ -160,11 +196,8 @@ The live demo linked above is deployed on Vercel via the same production build.
 
 ## Known limitations
 
-- Solver initialization and execution occur on the main browser thread, which can briefly block the
-  UI while loading solver tables or solving a deeply scrambled cube. A Web Worker would remove this
-  limitation.
-- Solver loading evaluates the CommonJS source distributed by `cubejs`, which limits strict Content
-  Security Policy support (no `unsafe-eval`).
+- Solver lookup tables are rebuilt on each Web Worker start (~0.7 s) rather than being cached across
+  sessions; persisting them (e.g. in IndexedDB) would make warm starts instant.
 
 ## License
 

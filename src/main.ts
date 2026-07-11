@@ -7,7 +7,7 @@ import { createScramble } from "./domain/scramble";
 import { validateFacelets } from "./domain/validation";
 import { CubePreview } from "./rendering/CubePreview";
 import { invertMove } from "./rendering/moveRotation";
-import { cubeSolver } from "./solver/cubejsSolver";
+import { twoPhaseSolver } from "./solver/twoPhaseSolver";
 import { CubeScanner } from "./scan/CubeScanner";
 import { getAppElements, getAppRoot } from "./ui/dom";
 import { renderAppTemplate } from "./ui/template";
@@ -66,11 +66,11 @@ function startApp() {
 
   if ("requestIdleCallback" in window) {
     window.requestIdleCallback(() => {
-      void cubeSolver.initialize();
+      void twoPhaseSolver.initialize();
     });
   } else {
     setTimeout(() => {
-      void cubeSolver.initialize();
+      void twoPhaseSolver.initialize();
     }, 1000);
   }
 }
@@ -282,12 +282,12 @@ async function solveCurrentState() {
 
   try {
     elements.solveBtn.disabled = true;
-    if (!cubeSolver.ready) {
+    if (!twoPhaseSolver.ready) {
       setStatus(elements, "Preparing solver tables", "neutral");
-      await cubeSolver.initialize();
+      await twoPhaseSolver.initialize();
     }
 
-    const result = cubeSolver.solve(state);
+    const result = await twoPhaseSolver.solve(state);
     appState = reduceAppState(appState, {
       type: "set-solution",
       base: state,
