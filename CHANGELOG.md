@@ -9,10 +9,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- Webcam cube scanning (`src/scan/CubeScanner.ts`) with HSV-based sticker-color
-  detection (`src/domain/colorDetection.ts`).
-- Animated individual face turns during solution playback via a rebuilt
-  `CubePreview` and a verified move-to-rotation mapping (`src/rendering/moveRotation.ts`).
+- Webcam cube scanning (`src/scan/CubeScanner.ts`) with HSV-based sticker-color detection
+  (`src/domain/colorDetection.ts`).
+- Animated individual face turns during solution playback via a rebuilt `CubePreview` and a verified
+  move-to-rotation mapping (`src/rendering/moveRotation.ts`).
 - Scan → Verify → Solve → Play progress wizard.
 
 ### Fixed
