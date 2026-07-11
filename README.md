@@ -18,6 +18,9 @@ apply move notation, solve the cube, and inspect the solution through step-by-st
 ## Features
 
 - Interactive 54-sticker cube editor with fixed centers
+- Webcam cube scanning with automatic sticker-color detection
+- Guided Scan → Verify → Solve → Play wizard flow
+- Animated per-face-turn solution playback
 - Synchronized Three.js cube preview with pointer rotation
 - Facelet-string import and export
 - Standard move-notation input
@@ -160,7 +163,6 @@ The live demo linked above is deployed on Vercel via the same production build.
 - Solver initialization and execution occur on the main browser thread, which can briefly block the
   UI while loading solver tables or solving a deeply scrambled cube. A Web Worker would remove this
   limitation.
-- Solution playback updates cube states but does not animate individual face turns.
 - Solver loading evaluates the CommonJS source distributed by `cubejs`, which limits strict Content
   Security Policy support (no `unsafe-eval`).
 

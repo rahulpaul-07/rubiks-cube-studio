@@ -13,6 +13,8 @@ export function getAppElements() {
     palette: must<HTMLDivElement>("#palette"),
     faceNet: must<HTMLDivElement>("#faceNet"),
     colorBalance: must<HTMLDivElement>("#colorBalance"),
+    scanBtn: must<HTMLButtonElement>("#scanBtn"),
+    wizard: must<HTMLElement>("#wizard"),
     solveBtn: must<HTMLButtonElement>("#solveBtn"),
     scrambleBtn: must<HTMLButtonElement>("#scrambleBtn"),
     validateBtn: must<HTMLButtonElement>("#validateBtn"),

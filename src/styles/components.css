@@ -552,3 +552,202 @@ textarea:focus {
     grid-column: 1 / -1;
   }
 }
+
+/* ── Wizard progress bar ─────────────────────────────────────── */
+.wizard {
+  margin: 0 0 18px;
+}
+
+.wizard ol {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wizard-step {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid #dfe5ef;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #64748b;
+  font-weight: 700;
+  font-size: 0.86rem;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease,
+    background 0.15s ease;
+}
+
+.wizard-num {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid #d7dee9;
+  background: #f5f7fb;
+  font-size: 0.78rem;
+  flex: none;
+}
+
+.wizard-step.active {
+  border-color: #223044;
+  color: #111827;
+  background: #f9fbff;
+}
+
+.wizard-step.active .wizard-num {
+  border-color: #223044;
+  background: #223044;
+  color: #ffffff;
+}
+
+.wizard-step.done {
+  color: #17643b;
+}
+
+.wizard-step.done .wizard-num {
+  border-color: #22b36b;
+  background: #22b36b;
+  color: #ffffff;
+}
+
+@media (max-width: 640px) {
+  .wizard-label {
+    display: none;
+  }
+}
+
+/* ── Scan modal ──────────────────────────────────────────────── */
+.scan-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.62);
+  backdrop-filter: blur(3px);
+}
+
+.scan-modal {
+  width: min(420px, 100%);
+  background: #ffffff;
+  border: 1px solid #dfe5ef;
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 24px 60px -24px rgba(15, 23, 42, 0.6);
+}
+
+.scan-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.scan-close {
+  border: none;
+  background: transparent;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.scan-video-wrap {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #000000;
+  border: 1px solid #d9e1ec;
+}
+
+.scan-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.scan-video-wrap[data-mirror="true"] .scan-video {
+  transform: scaleX(-1);
+}
+
+.scan-grid {
+  position: absolute;
+  inset: 12%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 4px;
+  pointer-events: none;
+}
+
+.scan-grid span {
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  border-radius: 6px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+.scan-hint {
+  margin: 12px 0 8px;
+  color: #475569;
+  font-size: 0.9rem;
+  min-height: 2.4em;
+}
+
+.scan-progress {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.scan-chip {
+  flex: 1 1 0;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 6px;
+  border: 1px solid #d7dee9;
+  background: #f5f7fb;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.scan-chip.active {
+  border-color: #223044;
+  color: #111827;
+  background: #ffffff;
+}
+
+.scan-chip.done {
+  border-color: #22b36b;
+  background: #effaf3;
+  color: #17643b;
+}
+
+.scan-mirror {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #475569;
+  font-size: 0.84rem;
+  margin-bottom: 14px;
+}
+
+.scan-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.scan-actions .btn {
+  flex: 1 1 0;
+}
