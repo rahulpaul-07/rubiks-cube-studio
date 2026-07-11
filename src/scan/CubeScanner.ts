@@ -36,11 +36,39 @@ export class CubeScanner {
   private readonly canvas = document.createElement("canvas");
   private stepIndex = 0;
   private mirror = true;
+  private previousFocus: HTMLElement | null = null;
   private readonly captured = new Map<Face, Face[]>();
 
   constructor(private readonly options: CubeScannerOptions) {}
 
+  // Escape closes the scanner; Tab is trapped within the modal for keyboard users.
+  private readonly onKeydown = (event: KeyboardEvent): void => {
+    if (!this.overlay) return;
+    if (event.key === "Escape") {
+      event.preventDefault();
+      this.close();
+      this.options.onCancel();
+      return;
+    }
+    if (event.key !== "Tab") return;
+    const focusable = this.overlay.querySelectorAll<HTMLElement>(
+      'button, input, [href], [tabindex]:not([tabindex="-1"])',
+    );
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
+
   async open(): Promise<void> {
+    this.previousFocus =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
     this.stepIndex = 0;
     this.captured.clear();
     this.renderOverlay();
@@ -61,6 +89,7 @@ export class CubeScanner {
   }
 
   close(): void {
+    document.removeEventListener("keydown", this.onKeydown);
     if (this.stream) {
       this.stream.getTracks().forEach((track) => track.stop());
       this.stream = null;
@@ -70,6 +99,8 @@ export class CubeScanner {
       this.overlay = null;
     }
     this.video = null;
+    this.previousFocus?.focus();
+    this.previousFocus = null;
   }
 
   private renderOverlay(): void {
@@ -118,6 +149,8 @@ export class CubeScanner {
     });
 
     this.renderProgress();
+    document.addEventListener("keydown", this.onKeydown);
+    overlay.querySelector<HTMLElement>('[data-action="capture"]')?.focus();
   }
 
   private captureCurrentFace(): void {

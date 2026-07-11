@@ -58,7 +58,8 @@ function startApp() {
   });
 
   preview = new CubePreview(elements.preview);
-  preview.setTurnDuration(TURN_DURATION_MS);
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  preview.setTurnDuration(reducedMotion ? 1 : TURN_DURATION_MS);
   renderAll(elements, appState, preview, playing, { onSelectFace, onPaint }, "Ready", "neutral");
   setStage("scan");
   bindEvents();
@@ -460,3 +461,9 @@ function makeCube(state: string) {
 }
 
 startApp();
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    void navigator.serviceWorker.register("/sw.js").catch(() => undefined);
+  });
+}

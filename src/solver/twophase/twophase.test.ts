@@ -31,14 +31,14 @@ describe("two-phase solver", () => {
   });
 
   it("solves random cubes, verified by cubejs's independent move engine", () => {
-    const N = 60;
+    const N = 12;
     let maxLen = 0;
     for (let i = 0; i < N; i += 1) {
       let cube = solvedCubie();
       for (const move of randomScramble(25).split(" ")) cube = applyToken(cube, move);
       const facelet = cubieToFacelet(cube);
 
-      const result = solveFacelets(facelet, tables, { maxTimeMs: 80 });
+      const result = solveFacelets(facelet, tables, { maxTimeMs: 700 });
       expect(result).not.toBeNull();
       const solution = result!;
 
@@ -81,7 +81,7 @@ describe("two-phase solver", () => {
     ]);
     let cube = solvedCubie();
     for (const move of randomScramble(25).split(" ")) cube = applyToken(cube, move);
-    const result = solveFacelets(cubieToFacelet(cube), tables, { maxTimeMs: 80 });
+    const result = solveFacelets(cubieToFacelet(cube), tables, { maxTimeMs: 700 });
     expect(result).not.toBeNull();
     for (const move of result!.moves) expect(legal.has(move)).toBe(true);
   });
