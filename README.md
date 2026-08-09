@@ -7,7 +7,8 @@
 
 An interactive 3×3 Rubik's Cube studio: **scan a real cube with your webcam**, verify the colors,
 and watch a **hand-written Kociemba two-phase solver** — running in a Web Worker — drive an
-**animated 3D solution**. Built with TypeScript and Three.js, with no third-party solver at runtime.
+**animated 3D solution**. Built with TypeScript and Three.js — the solution itself is computed entirely by a
+hand-written solver, with no third-party solver involved.
 
 **[Try the live demo →](https://rubiks-cube-studio.vercel.app)**
 
@@ -19,7 +20,7 @@ apply move notation, solve the cube, and inspect the solution through step-by-st
 ## Highlights
 
 - 🧠 **Custom two-phase solver, from scratch** — cubie model, coordinate reduction, move and pruning
-  tables, and IDA\* search. No runtime solver dependency. Averages **~20.6 moves** (God's number
+  tables, and IDA\* search. No third-party solver computes the solution. Averages **~20.6 moves** (God's number
   is 20) and is **100% correct** across 1,500+ random cubes, verified against an independent engine.
 - 📷 **Webcam cube scanning** — capture all six faces and classify stickers with an HSV color
   pipeline.
@@ -59,7 +60,7 @@ flowchart LR
 ## Custom two-phase solver
 
 The cube is solved by a **from-scratch implementation of Kociemba's two-phase algorithm** — there is
-no third-party solver at runtime. It runs entirely inside a **Web Worker**, so building lookup
+no third-party solver computes the solution. It runs entirely inside a **Web Worker**, so building lookup
 tables and searching never block rendering or the turn animation.
 
 **How it works.** The solver models the cube at the cubie level (corner and edge permutation and
@@ -87,7 +88,7 @@ and so on) are rejected up front.
 | Solve budget                      | 100 ms per cube                                                  |
 
 Every one of the solver's 18 face moves and every coordinate transition is unit-tested against a
-reference engine (`cubejs`, used **only** in tests), and full solutions are re-verified
+reference engine (`cubejs`), and full solutions are re-verified
 move-for-move by that independent engine on thousands of random cubes (`src/solver/twophase/`).
 
 ## Technology
@@ -96,7 +97,7 @@ move-for-move by that independent engine on thousands of random cubes (`src/solv
 - **Vite** for local development and production builds
 - **Three.js** for the interactive WebGL preview
 - **A hand-written Kociemba two-phase solver** in a Web Worker (`src/solver/twophase/`)
-- **cubejs** as an independent solver oracle in the test suite only
+- **cubejs** for cube-state legality validation, and as an independent solver oracle in tests
 - **ESLint and Prettier** for automated code-quality checks
 - **Vitest** and **Playwright** for unit and end-to-end testing
 - **GitHub Actions** for continuous integration
