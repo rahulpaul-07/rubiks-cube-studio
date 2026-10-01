@@ -97,7 +97,8 @@ move-for-move by that independent engine on thousands of random cubes (`src/solv
 - **Vite** for local development and production builds
 - **Three.js** for the interactive WebGL preview
 - **A hand-written Kociemba two-phase solver** in a Web Worker (`src/solver/twophase/`)
-- **cubejs** for cube-state legality validation, and as an independent solver oracle in tests
+- **cubejs** for cube-state legality validation and for applying scrambles and moves during
+  playback (never to compute a solution), and as an independent solver oracle in tests
 - **ESLint and Prettier** for automated code-quality checks
 - **Vitest** and **Playwright** for unit and end-to-end testing
 - **GitHub Actions** for continuous integration

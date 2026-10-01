@@ -8,7 +8,9 @@ the source.
 
 Rubik's Cube Studio is a client-side single-page application that lets users paint, scramble,
 validate, scan, and solve a 3×3 Rubik's Cube. Solving uses a from-scratch implementation of Herbert
-Kociemba's two-phase algorithm that runs in a Web Worker; `cubejs` is used only as a test oracle. A
+Kociemba's two-phase algorithm that runs in a Web Worker. `cubejs` never computes a solution: at
+runtime it checks cube-state legality and applies scrambles and moves for playback, and in tests it
+is the independent oracle that re-verifies every solution. A
 Three.js-powered 3D preview renders and animates the cube in real time.
 
 The application is bundled with Vite and written entirely in TypeScript.
@@ -100,9 +102,11 @@ mutations flow through a single function, making state changes predictable and t
 
 ### Solver loading
 
-`cubejs` distributes its solver tables as CommonJS source. The `CubeJsSolver` adapter evaluates this
-source lazily. To avoid blocking the initial page load while ensuring the solver is ready quickly,
-it is initialized during the browser's idle time using `requestIdleCallback`.
+The two-phase solver (`src/solver/twoPhaseSolver.ts`) builds its pruning tables inside a Web Worker
+(`twophase.worker.ts`), so table generation never blocks the UI thread. To keep the initial page load
+fast while still having the solver ready quickly, `main.ts` starts that initialization during the
+browser's idle time with `requestIdleCallback` (falling back to a one-second timeout). The
+`CubeJsSolver` adapter remains only as the test oracle.
 
 ### Three.js lifecycle
 
@@ -118,7 +122,8 @@ and orientation) to catch physically impossible states.
 
 ## Testing
 
-Unit tests cover the `domain/` and `app/` modules using Vitest. Tests are colocated next to source
+Unit tests cover the `domain/`, `app/`, `rendering/` and `solver/` modules using Vitest (66 tests
+across 11 files). Tests are colocated next to source
 files as `*.test.ts`. Run them with:
 
 ```bash
